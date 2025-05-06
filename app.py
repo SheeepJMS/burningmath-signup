@@ -193,7 +193,9 @@ def delete_customer():
     db.session.commit()
     return jsonify(success=True)
 
+# 保证无论本地还是线上都能自动建表
+with app.app_context():
+    db.create_all()
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True) 
