@@ -5,4 +5,7 @@ python-dotenv==0.19.0
 SQLAlchemy==1.4.23
 Werkzeug==2.0.1
 WTForms==2.3.3
-gunicorn 
+gunicorn
+psycopg2-binary
+cloudinary
+cloudinary-storage 

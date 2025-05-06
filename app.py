@@ -2,13 +2,23 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
+import cloudinary
+import cloudinary.uploader
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///customers.db'
+# 优先用环境变量DATABASE_URL（如线上Postgres），否则用本地sqlite
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///customers.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+cloudinary.config(
+    cloud_name = 'dhjim7xbr',
+    api_key = '149872547298524',
+    api_secret = 'QItNLkUdG54eFYrFXfVPfCo74eM',
+    secure = True
+)
 
 # 客户信息模型
 class Customer(db.Model):
@@ -96,14 +106,11 @@ def admin_classes_save():
         image_url = None
         if image and image.filename:
             try:
-                image_folder = os.path.join('static', 'class_images')
-                os.makedirs(image_folder, exist_ok=True)
-                image_path = os.path.join(image_folder, image.filename)
-                image.save(image_path)
-                image_url = f'/static/class_images/{image.filename}'
+                upload_result = cloudinary.uploader.upload(image)
+                image_url = upload_result['secure_url']
             except Exception as e:
-                print(f"Error saving image: {str(e)}")
-                return jsonify(success=False, message='图片保存失败')
+                print(f"Error uploading image to Cloudinary: {str(e)}")
+                return jsonify(success=False, message='图片上传失败')
 
         # 保存到数据库
         try:
