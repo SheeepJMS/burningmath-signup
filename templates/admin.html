@@ -208,8 +208,22 @@
 
         function deleteCustomer(id) {
             if (confirm('确定要删除这条记录吗？')) {
-                // 这里应该通过API删除客户信息
-                alert('删除成功！');
+                $.ajax({
+                    url: '/api/delete_customer',
+                    method: 'POST',
+                    data: {id: id},
+                    success: function(response) {
+                        if (response.success) {
+                            alert('删除成功！');
+                            window.location.reload();
+                        } else {
+                            alert('删除失败：' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('删除失败，请稍后重试');
+                    }
+                });
             }
         }
 

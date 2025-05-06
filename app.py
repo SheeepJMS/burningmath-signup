@@ -176,6 +176,16 @@ def edit_customer():
     db.session.commit()
     return jsonify(success=True)
 
+@app.route('/api/delete_customer', methods=['POST'])
+def delete_customer():
+    customer_id = request.form.get('id')
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return jsonify(success=False, message='客户不存在')
+    db.session.delete(customer)
+    db.session.commit()
+    return jsonify(success=True)
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
