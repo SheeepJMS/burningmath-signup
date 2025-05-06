@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学课程咨询</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .class-recommendation {
+            display: none;
+            margin-top: 2rem;
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2 class="text-center mb-4">数学课程咨询表</h2>
+            <form id="customerForm">
+                <div class="mb-3">
+                    <label for="child_name" class="form-label">孩子姓名</label>
+                    <input type="text" class="form-control" id="child_name" name="child_name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="wechat_name" class="form-label">家长微信名</label>
+                    <input type="text" class="form-control" id="wechat_name" name="wechat_name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="grade" class="form-label">年级</label>
+                    <select class="form-select" id="grade" name="grade" required>
+                        <option value="">请选择年级</option>
+                        <option value="G1">G1 (小学一年级)</option>
+                        <option value="G2">G2 (小学二年级)</option>
+                        <option value="G3">G3 (小学三年级)</option>
+                        <option value="G4">G4 (小学四年级)</option>
+                        <option value="G5">G5 (小学五年级)</option>
+                        <option value="G6">G6 (小学六年级)</option>
+                        <option value="G7">G7 (初中一年级)</option>
+                        <option value="G8">G8 (初中二年级)</option>
+                        <option value="G9">G9 (初中三年级)</option>
+                        <option value="G10">G10 (高中一年级)</option>
+                        <option value="G11">G11 (高中二年级)</option>
+                        <option value="G12">G12 (高中三年级)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">上课时间偏好</label>
+                    <div id="preferred_time_group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周六上午10-12" id="pt1">
+                            <label class="form-check-label" for="pt1">周六上午 10:00-12:00</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周六中午1-3" id="pt2">
+                            <label class="form-check-label" for="pt2">周六中午 13:00-15:00</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周六下午3-5" id="pt3">
+                            <label class="form-check-label" for="pt3">周六下午 15:00-17:00</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周六下午5-7" id="pt4">
+                            <label class="form-check-label" for="pt4">周六下午 17:00-19:00</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周日上午10-12" id="pt5">
+                            <label class="form-check-label" for="pt5">周日上午 10:00-12:00</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周日中午1-3" id="pt6">
+                            <label class="form-check-label" for="pt6">周日中午 13:00-15:00</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周日下午3-5" id="pt7">
+                            <label class="form-check-label" for="pt7">周日下午 15:00-17:00</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周日下午5-7" id="pt8">
+                            <label class="form-check-label" for="pt8">周日下午 17:00-19:00</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preferred_time" value="工作日晚上6-8" id="pt9">
+                            <label class="form-check-label" for="pt9">工作日晚上 18:00-20:00</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="competition_experience" class="form-label">竞赛成绩</label>
+                    <textarea class="form-control" id="competition_experience" name="competition_experience" rows="6" style="min-height: 150px;" placeholder="如有竞赛成绩请填写，没有可不填"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="needs" class="form-label">目前最大需求</label>
+                    <textarea class="form-control" id="needs" name="needs" rows="6" style="min-height: 150px;" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">提交信息</button>
+            </form>
+
+            <div id="classRecommendation" class="class-recommendation">
+                <h3>初步推荐班级</h3>
+                <div id="recommendedClassInfo"></div>
+                <div class="mt-3">
+                    <h4>试课安排</h4>
+                    <div class="mb-3">
+                        <button class="btn btn-success" onclick="scheduleTrial('now')">立即约课</button>
+                        <button class="btn btn-info" onclick="scheduleTrial('later')">未来预定</button>
+                    </div>
+                    <div id="trialTimeSelection" style="display: none;">
+                        <input type="date" class="form-control mb-2" id="trialDate">
+                        <select class="form-select mb-2" id="trialTimeSlot">
+                            <option value="10-12">早上 10:00-12:00</option>
+                            <option value="13-15">下午 13:00-15:00</option>
+                            <option value="15-17">下午 15:00-17:00</option>
+                            <option value="17-19">下午 17:00-19:00</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="confirmTrialTime()">确认试课时间</button>
+                    </div>
+                    <div id="futureBookingSelection" style="display: none;">
+                        <select class="form-select mb-2" id="futureYear">
+                            <option value="2024">2024年</option>
+                            <option value="2025">2025年</option>
+                            <option value="2026">2026年</option>
+                        </select>
+                        <select class="form-select mb-2" id="futureMonth">
+                            <option value="1">1月</option>
+                            <option value="2">2月</option>
+                            <option value="3">3月</option>
+                            <option value="4">4月</option>
+                            <option value="5">5月</option>
+                            <option value="6">6月</option>
+                            <option value="7">7月</option>
+                            <option value="8">8月</option>
+                            <option value="9">9月</option>
+                            <option value="10">10月</option>
+                            <option value="11">11月</option>
+                            <option value="12">12月</option>
+                        </select>
+                        <select class="form-select mb-2" id="futurePeriod">
+                            <option value="上旬">上旬</option>
+                            <option value="中旬">中旬</option>
+                            <option value="下旬">下旬</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="confirmFutureBooking()">确认预定时间</button>
+                    </div>
+                    <div id="trialArrangedInfo"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let savedCustomerId = null;
+        let currentTimeSlots = [];
+
+        document.getElementById('customerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            // 处理preferred_time多选
+            const checked = Array.from(document.querySelectorAll('input[name="preferred_time"]:checked')).map(cb => cb.value);
+            formData.delete('preferred_time');
+            formData.append('preferred_time', checked.join(','));
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    savedCustomerId = data.customer_id;
+                    document.getElementById('classRecommendation').style.display = 'block';
+                    let html = '';
+                    if (data.recommended_classes.length === 0) {
+                        html = '<div class="alert alert-warning">暂无适合的班级推荐。</div>';
+                        currentTimeSlots = [];
+                    } else {
+                        data.recommended_classes.forEach(cls => {
+                            html += `
+                                <div class="alert alert-success mb-3">
+                                    <h4>${cls.name}</h4>
+                                    <p>${cls.description || ''}</p>
+                                    ${cls.image_url ? `<img src="${cls.image_url}" alt="班级图片" style="width:100%;max-width:100%;border-radius:8px;margin-bottom:10px;">` : ''}
+                                </div>
+                            `;
+                        });
+                        // 只取第一个推荐班级的时间段
+                        const cls = data.recommended_classes[0];
+                        if (cls.time_slots) {
+                            currentTimeSlots = cls.time_slots.split(',');
+                        } else {
+                            currentTimeSlots = [];
+                        }
+                    }
+                    document.getElementById('recommendedClassInfo').innerHTML = html;
+                    updateTrialTimeSlotOptions();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('提交失败，请稍后重试');
+            }
+        });
+
+        function scheduleTrial(type) {
+            const trialTimeSelection = document.getElementById('trialTimeSelection');
+            const futureBookingSelection = document.getElementById('futureBookingSelection');
+            if (type === 'now') {
+                trialTimeSelection.style.display = 'block';
+                futureBookingSelection.style.display = 'none';
+            } else {
+                trialTimeSelection.style.display = 'none';
+                futureBookingSelection.style.display = 'block';
+            }
+        }
+
+        async function confirmTrialTime() {
+            const trialDate = document.getElementById('trialDate').value;
+            const trialTimeSlot = document.getElementById('trialTimeSlot').value;
+            if (trialDate && trialTimeSlot && savedCustomerId) {
+                // 禁用按钮
+                document.querySelectorAll('.btn-success, .btn-info').forEach(btn => btn.disabled = true);
+                document.getElementById('trialTimeSelection').style.display = 'none';
+                document.getElementById('futureBookingSelection').style.display = 'none';
+                // 显示已安排
+                let detail = `${trialDate} ${trialTimeSlot}`;
+                document.getElementById('trialArrangedInfo').innerHTML = `<div class='alert alert-primary'>已安排：${detail}</div>`;
+                // 写入数据库
+                const formData = new FormData();
+                formData.append('customer_id', savedCustomerId);
+                formData.append('trial_time', detail);
+                await fetch('/api/set_trial_time', {
+                    method: 'POST',
+                    body: formData
+                });
+            } else {
+                alert('请选择试课日期和时间段');
+            }
+        }
+
+        async function confirmFutureBooking() {
+            const year = document.getElementById('futureYear').value;
+            const month = document.getElementById('futureMonth').value;
+            const period = document.getElementById('futurePeriod').value;
+            if (year && month && period && savedCustomerId) {
+                // 禁用按钮
+                document.querySelectorAll('.btn-success, .btn-info').forEach(btn => btn.disabled = true);
+                document.getElementById('trialTimeSelection').style.display = 'none';
+                document.getElementById('futureBookingSelection').style.display = 'none';
+                // 显示已安排
+                let detail = `${year}年${month}月${period}`;
+                document.getElementById('trialArrangedInfo').innerHTML = `<div class='alert alert-primary'>已安排：${detail}</div>`;
+                // 写入数据库
+                const formData = new FormData();
+                formData.append('customer_id', savedCustomerId);
+                formData.append('trial_time', detail);
+                await fetch('/api/set_trial_time', {
+                    method: 'POST',
+                    body: formData
+                });
+            } else {
+                alert('请选择完整的预定时间');
+            }
+        }
+
+        function updateTrialTimeSlotOptions() {
+            const select = document.getElementById('trialTimeSlot');
+            select.innerHTML = '';
+            if (currentTimeSlots.length === 0) {
+                select.innerHTML = '<option value="">无可选时间段</option>';
+            } else {
+                currentTimeSlots.forEach(slot => {
+                    let label = '';
+                    if (slot === '10-12') label = '早上 10:00-12:00';
+                    else if (slot === '13-15') label = '下午 13:00-15:00';
+                    else if (slot === '15-17') label = '下午 15:00-17:00';
+                    else if (slot === '17-19') label = '下午 17:00-19:00';
+                    else if (/^周[六日][0-9]{2}-[0-9]{2}$/.test(slot)) {
+                        const day = slot.slice(0,2);
+                        const time = slot.slice(2).replace('-', ':00-') + ':00';
+                        label = `${day} ${slot.slice(2,4)}:00-${slot.slice(5)}:00`;
+                    } else {
+                        label = slot;
+                    }
+                    select.innerHTML += `<option value="${slot}">${label}</option>`;
+                });
+            }
+        }
+    </script>
+</body>
+</html> 

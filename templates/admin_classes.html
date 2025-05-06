@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级管理 - 后台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/datatables@1.10.18/media/css/jquery.dataTables.min.css" rel="stylesheet">
+    <style>
+        .grade-select {
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>班级管理</h2>
+            <button class="btn btn-primary" onclick="showAddClassModal()">添加新班级</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped" id="classesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>班级名称</th>
+                        <th>适用年级</th>
+                        <th>描述</th>
+                        <th>图片</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for class in classes %}
+                    <tr>
+                        <td>{{ class.id }}</td>
+                        <td>{{ class.name }}</td>
+                        <td>{{ class.grade_level }}</td>
+                        <td>{{ class.description }}</td>
+                        <td>
+                            {% if class.image_url %}
+                            <img src="{{ class.image_url }}" alt="班级图片" style="max-width: 100px;">
+                            {% else %}
+                            无图片
+                            {% endif %}
+                        </td>
+                        <td>{{ class.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editClass({{ class.id }})">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteClass({{ class.id }})">删除</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 添加/编辑班级的模态框 -->
+    <div class="modal fade" id="classModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">添加新班级</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="classForm">
+                        <input type="hidden" id="classId">
+                        <div class="mb-3">
+                            <label class="form-label">班级名称</label>
+                            <input type="text" class="form-control" id="className" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">适用年级</label>
+                            <div class="grade-checkboxes">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G1" id="gradeG1" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG1">G1 (小学一年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G2" id="gradeG2" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG2">G2 (小学二年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G3" id="gradeG3" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG3">G3 (小学三年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G4" id="gradeG4" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG4">G4 (小学四年级)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G5" id="gradeG5" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG5">G5 (小学五年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G6" id="gradeG6" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG6">G6 (小学六年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G7" id="gradeG7" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG7">G7 (初中一年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G8" id="gradeG8" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG8">G8 (初中二年级)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G9" id="gradeG9" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG9">G9 (初中三年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G10" id="gradeG10" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG10">G10 (高中一年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G11" id="gradeG11" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG11">G11 (高中二年级)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="G12" id="gradeG12" name="gradeLevel">
+                                            <label class="form-check-label" for="gradeG12">G12 (高中三年级)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">班级描述</label>
+                            <textarea class="form-control" id="classDescription" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">班级图片</label>
+                            <input type="file" class="form-control" id="classImage" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">可选时间段</label>
+                            <div id="timeSlotsGroup">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="周六10-12" id="ts1" name="timeSlots">
+                                    <label class="form-check-label" for="ts1">周六 10:00-12:00</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="周六13-15" id="ts2" name="timeSlots">
+                                    <label class="form-check-label" for="ts2">周六 13:00-15:00</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="周六15-17" id="ts3" name="timeSlots">
+                                    <label class="form-check-label" for="ts3">周六 15:00-17:00</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="周六17-19" id="ts4" name="timeSlots">
+                                    <label class="form-check-label" for="ts4">周六 17:00-19:00</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="周日10-12" id="ts5" name="timeSlots">
+                                    <label class="form-check-label" for="ts5">周日 10:00-12:00</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="周日13-15" id="ts6" name="timeSlots">
+                                    <label class="form-check-label" for="ts6">周日 13:00-15:00</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="周日15-17" id="ts7" name="timeSlots">
+                                    <label class="form-check-label" for="ts7">周日 15:00-17:00</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="周日17-19" id="ts8" name="timeSlots">
+                                    <label class="form-check-label" for="ts8">周日 17:00-19:00</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveClass()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确保JavaScript库按正确顺序加载 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script>
+        // 检查必要的库是否加载
+        if (typeof jQuery === 'undefined') {
+            console.error('jQuery未加载');
+        }
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap未加载');
+        }
+
+        $(document).ready(function() {
+            console.log('页面加载完成');
+            // 初始化DataTable
+            try {
+                $('#classesTable').DataTable({
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
+                    }
+                });
+            } catch (e) {
+                console.error('DataTable初始化失败:', e);
+            }
+        });
+
+        function showAddClassModal() {
+            console.log('显示添加班级模态框');
+            try {
+                $('#modalTitle').text('添加新班级');
+                $('#classForm')[0].reset();
+                $('#classId').val('');
+                const modalElement = document.getElementById('classModal');
+                if (!modalElement) {
+                    console.error('找不到模态框元素');
+                    return;
+                }
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } catch (e) {
+                console.error('显示模态框失败:', e);
+            }
+        }
+
+        function editClass(id) {
+            $('#modalTitle').text('编辑班级');
+            // 这里应该通过API获取班级信息
+            // 示例代码
+            const classInfo = {
+                id: id,
+                name: '示例班级',
+                grade_level: ['G1', 'G2', 'G3'],  // 示例：多个年级
+                description: '示例描述',
+                image_url: ''
+            };
+
+            $('#classId').val(classInfo.id);
+            $('#className').val(classInfo.name);
+            // 清除所有复选框的选中状态
+            $('input[name="gradeLevel"]').prop('checked', false);
+            // 设置选中的年级
+            classInfo.grade_level.forEach(grade => {
+                $(`#grade${grade}`).prop('checked', true);
+            });
+            $('#classDescription').val(classInfo.description);
+
+            new bootstrap.Modal(document.getElementById('classModal')).show();
+        }
+
+        function saveClass() {
+            const selectedGrades = [];
+            $('input[name="gradeLevel"]:checked').each(function() {
+                selectedGrades.push($(this).val());
+            });
+            
+            if (selectedGrades.length === 0) {
+                alert('请至少选择一个年级');
+                return;
+            }
+
+            const name = $('#className').val();
+            const description = $('#classDescription').val();
+
+            if (!name || !description) {
+                alert('请填写所有必填项（班级名称和描述）');
+                return;
+            }
+
+            // 构建要保存的数据
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('grade_level', selectedGrades.join(','));
+            formData.append('description', description);
+            // 新增：收集时间段
+            const selectedTimeSlots = [];
+            $('input[name="timeSlots"]:checked').each(function() {
+                selectedTimeSlots.push($(this).val());
+            });
+            formData.append('time_slots', selectedTimeSlots.join(','));
+            
+            const imageFile = $('#classImage')[0].files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            // 发送保存请求
+            $.ajax({
+                url: '/admin/classes/save',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        alert('保存成功！');
+                        bootstrap.Modal.getInstance(document.getElementById('classModal')).hide();
+                        // 刷新页面以显示新数据
+                        window.location.reload();
+                    } else {
+                        alert('保存失败：' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    alert('保存失败，请稍后重试');
+                }
+            });
+        }
+
+        function deleteClass(id) {
+            if (confirm('确定要删除这个班级吗？')) {
+                $.ajax({
+                    url: '/admin/classes/delete/' + id,
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            alert('删除成功！');
+                            // 刷新页面以更新数据
+                            window.location.reload();
+                        } else {
+                            alert('删除失败：' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('删除失败，请稍后重试');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html> 
