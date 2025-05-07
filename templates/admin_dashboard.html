@@ -37,7 +37,7 @@
     </style>
 </head>
 <body>
-<div class="container-lg py-4">
+<div class="container-fluid py-4">
     <!-- 顶部Tab -->
     <ul class="nav nav-tabs mb-4" id="adminTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -98,18 +98,18 @@
                 <table class="table table-striped table-hover table-bordered align-middle" id="customersTable">
                     <thead class="table-dark text-center">
                         <tr>
-                            <th><input type="checkbox" id="selectAllCustomers"></th>
-                            <th>ID</th>
-                            <th>孩子姓名</th>
-                            <th>家长微信名</th>
-                            <th>年级</th>
-                            <th>时间偏好</th>
-                            <th style="min-width: 200px;">竞赛成绩</th>
-                            <th style="min-width: 200px;">需求</th>
-                            <th>推荐班级</th>
-                            <th>试课时间</th>
-                            <th>提交时间</th>
-                            <th>操作</th>
+                            <th style="width:40px;"><input type="checkbox" id="selectAllCustomers"></th>
+                            <th style="width:60px;">ID</th>
+                            <th style="min-width:180px;">孩子姓名</th>
+                            <th style="min-width:180px;">家长微信名</th>
+                            <th style="width:90px;">年级</th>
+                            <th style="width:160px;">时间偏好</th>
+                            <th style="min-width:80px;max-width:120px;">竞赛成绩</th>
+                            <th style="min-width:80px;max-width:120px;">需求</th>
+                            <th style="width:120px;">推荐班级</th>
+                            <th style="width:140px;">试课时间</th>
+                            <th style="width:140px;">提交时间</th>
+                            <th style="min-width:160px;">操作</th>
                         </tr>
                     </thead>
                     <tbody class="text-center">
@@ -117,32 +117,32 @@
                         <tr>
                             <td><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"></td>
                             <td>{{ customer.id }}</td>
-                            <td>{{ customer.child_name }}</td>
-                            <td>{{ customer.wechat_name }}</td>
-                            <td>{{ customer.grade }}</td>
-                            <td>{{ customer.preferred_time }}</td>
-                            <td>
+                            <td style="min-width:180px;">{{ customer.child_name }}</td>
+                            <td style="min-width:180px;">{{ customer.wechat_name }}</td>
+                            <td style="min-width:120px;max-width:180px;">{{ customer.grade }}</td>
+                            <td style="min-width:160px;">{{ customer.preferred_time }}</td>
+                            <td style="min-width:80px;max-width:120px;">
                                 <div class="text-wrap" style="max-height: 100px; overflow-y: auto;">
                                     {{ customer.competition_experience }}
                                 </div>
                             </td>
-                            <td>
+                            <td style="min-width:80px;max-width:120px;">
                                 <div class="text-wrap" style="max-height: 100px; overflow-y: auto;">
                                     {{ customer.needs }}
                                 </div>
                             </td>
-                            <td>{{ customer.recommended_class }}</td>
-                            <td>
+                            <td style="min-width:120px;">{{ customer.recommended_class }}</td>
+                            <td style="min-width:140px;">
                                 <span class="trial-time-cell">
                                     {{ customer.future_trial_time or customer.trial_class_time or '未安排' }}
                                 </span>
                             </td>
-                            <td>{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>
-                                <button class="btn btn-info btn-sm rounded-pill me-1" onclick="editCustomer({{ customer.id }})">
+                            <td style="min-width:140px;">{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td style="min-width:160px;">
+                                <button class="btn btn-info btn-sm rounded-pill me-1 px-4" onclick="editCustomer({{ customer.id }})">
                                     <i class="bi bi-pencil-square"></i> 编辑
                                 </button>
-                                <button class="btn btn-danger btn-sm rounded-pill" onclick="deleteCustomer({{ customer.id }})">
+                                <button class="btn btn-danger btn-sm rounded-pill px-4" onclick="deleteCustomer({{ customer.id }})">
                                     <i class="bi bi-trash"></i> 删除
                                 </button>
                             </td>
@@ -384,230 +384,253 @@
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-<script>
-    $(document).ready(function() {
-        var table = $('#customersTable').DataTable({
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
-            },
-            pageLength: 100,
-            stateSave: true,
-            drawCallback: function(settings) {
-                $('#customersTable .trial-time-cell').each(function() {
-                    const text = $(this).text().trim();
-                    if (!text || text === '未安排') {
-                        $(this).css({'background':'#e9ecef', 'color':'#888', 'font-weight':'normal'}); // 未安排灰色
-                        return;
-                    }
-                    // 解析日期和时间
-                    let dateStr = text.split(' ')[0];
-                    let timeStr = text.split(' ')[1] || '00:00';
-                    if (timeStr && timeStr.match(/\d{1,2}-\d{1,2}/)) {
-                        timeStr = timeStr.split('-')[0] + ':00';
-                    }
-                    let dt = new Date(dateStr + 'T' + timeStr);
-                    if (isNaN(dt.getTime())) {
-                        $(this).css({'background':'#e9ecef', 'color':'#888', 'font-weight':'normal'}); // 解析失败也灰色
-                        return;
-                    }
-                    const now = new Date();
-                    const diffMs = dt - now;
-                    const diffDays = diffMs / (1000 * 60 * 60 * 24);
-                    if (diffDays < 0) {
-                        $(this).css({'background':'#ffcccc', 'color':'#a00', 'font-weight':'bold'}); // 已发生红色
-                    } else if (diffDays <= 14) {
-                        $(this).css({'background':'#fff3cd', 'color':'#b8860b', 'font-weight':'bold'}); // 未来两周黄色
+<div class="container-xl py-4">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var table = $('#customersTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
+                },
+                pageLength: 100,
+                stateSave: true,
+                drawCallback: function(settings) {
+                    $('#customersTable .trial-time-cell').each(function() {
+                        const text = $(this).text().trim();
+                        if (!text || text === '未安排') {
+                            $(this).css({'background':'#e9ecef', 'color':'#888', 'font-weight':'normal'}); // 未安排灰色
+                            return;
+                        }
+                        // 解析日期和时间
+                        let dateStr = text.split(' ')[0];
+                        let timeStr = text.split(' ')[1] || '00:00';
+                        if (timeStr && timeStr.match(/\d{1,2}-\d{1,2}/)) {
+                            timeStr = timeStr.split('-')[0] + ':00';
+                        }
+                        let dt = new Date(dateStr + 'T' + timeStr);
+                        if (isNaN(dt.getTime())) {
+                            $(this).css({'background':'#e9ecef', 'color':'#888', 'font-weight':'normal'}); // 解析失败也灰色
+                            return;
+                        }
+                        const now = new Date();
+                        const diffMs = dt - now;
+                        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+                        if (diffDays < 0) {
+                            $(this).css({'background':'#ffcccc', 'color':'#a00', 'font-weight':'bold'}); // 已发生红色
+                        } else if (diffDays <= 14) {
+                            $(this).css({'background':'#fff3cd', 'color':'#b8860b', 'font-weight':'bold'}); // 未来两周黄色
+                        } else {
+                            $(this).css({'background':'#d4edda', 'color':'#155724', 'font-weight':'bold'}); // 其它绿色
+                        }
+                    });
+                }
+            });
+            // 全选/反选
+            $('#selectAllCustomers').on('change', function() {
+                const checked = $(this).prop('checked');
+                $('.customer-checkbox').prop('checked', checked);
+            });
+            // 单个checkbox取消全选
+            $(document).on('change', '.customer-checkbox', function() {
+                if (!$(this).prop('checked')) {
+                    $('#selectAllCustomers').prop('checked', false);
+                }
+            });
+            $('#classesTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
+                }
+            });
+        });
+        // 客户编辑弹窗相关JS
+        function editCustomer(id) {
+            // 获取表格中该客户的所有信息
+            const row = $(`#customersTable tr`).filter(function() {
+                return $(this).find('td:first').text() == id;
+            });
+            $('#editCustomerId').val(id);
+            $('#editChildName').val(row.find('td').eq(1).text());
+            $('#editWechatName').val(row.find('td').eq(2).text());
+            $('#editGrade').val(row.find('td').eq(3).text());
+            $('#editPreferredTime').val(row.find('td').eq(4).text());
+            $('#editCompetitionExperience').val(row.find('td').eq(5).text());
+            $('#editNeeds').val(row.find('td').eq(6).text());
+            $('#editRecommendedClass').val(row.find('td').eq(7).text());
+            $('#editTrialTime').val(row.find('td').eq(8).text());
+            new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
+        }
+        function saveEditCustomer() {
+            const formData = new FormData();
+            formData.append('id', $('#editCustomerId').val());
+            formData.append('child_name', $('#editChildName').val());
+            formData.append('wechat_name', $('#editWechatName').val());
+            formData.append('grade', $('#editGrade').val());
+            formData.append('preferred_time', $('#editPreferredTime').val());
+            formData.append('competition_experience', $('#editCompetitionExperience').val());
+            formData.append('needs', $('#editNeeds').val());
+            formData.append('recommended_class', $('#editRecommendedClass').val());
+            formData.append('trial_time', $('#editTrialTime').val());
+            $.ajax({
+                url: '/api/edit_customer',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        alert('保存成功！');
+                        bootstrap.Modal.getInstance(document.getElementById('editCustomerModal')).hide();
+                        window.location.reload();
                     } else {
-                        $(this).css({'background':'#d4edda', 'color':'#155724', 'font-weight':'bold'}); // 其它绿色
+                        alert('保存失败：' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('保存失败，请稍后重试');
+                }
+            });
+        }
+        // 这里可继续粘贴原有的客户和班级管理相关JS函数
+        function saveClass() {
+            const selectedGrades = [];
+            $('input[name="gradeLevel"]:checked').each(function() {
+                selectedGrades.push($(this).val());
+            });
+            const selectedTimeSlots = [];
+            $('input[name="classTimeSlot"]:checked').each(function() {
+                selectedTimeSlots.push($(this).val());
+            });
+            if (selectedGrades.length === 0) {
+                alert('请至少选择一个年级');
+                return;
+            }
+            if (selectedTimeSlots.length === 0) {
+                alert('请至少选择一个时间段');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('name', $('#className').val());
+            formData.append('grade_level', selectedGrades.join(','));
+            formData.append('description', $('#classDescription').val());
+            formData.append('time_slots', selectedTimeSlots.join(','));
+            const imageFile = $('#classImage')[0].files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            $.ajax({
+                url: '/admin/classes/save',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        alert('保存成功！');
+                        bootstrap.Modal.getInstance(document.getElementById('classModal')).hide();
+                        window.location.reload();
+                    } else {
+                        alert('保存失败：' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('保存失败，请稍后重试');
+                }
+            });
+        }
+        function showAddClassModal() {
+            $('#modalTitle').text('添加新班级');
+            $('#classForm')[0].reset();
+            $('#classId').val('');
+            const modal = new bootstrap.Modal(document.getElementById('classModal'));
+            modal.show();
+        }
+        function deleteCustomer(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                $.ajax({
+                    url: '/api/delete_customer',
+                    method: 'POST',
+                    data: {id: id},
+                    success: function(response) {
+                        if (response.success) {
+                            alert('删除成功！');
+                            window.location.reload();
+                        } else {
+                            alert('删除失败：' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('删除失败，请稍后重试');
                     }
                 });
             }
-        });
-        // 全选/反选
-        $('#selectAllCustomers').on('change', function() {
-            const checked = $(this).prop('checked');
-            $('.customer-checkbox').prop('checked', checked);
-        });
-        // 单个checkbox取消全选
-        $(document).on('change', '.customer-checkbox', function() {
-            if (!$(this).prop('checked')) {
-                $('#selectAllCustomers').prop('checked', false);
-            }
-        });
-        $('#classesTable').DataTable({
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
-            }
-        });
-    });
-    // 客户编辑弹窗相关JS
-    function editCustomer(id) {
-        // 获取表格中该客户的所有信息
-        const row = $(`#customersTable tr`).filter(function() {
-            return $(this).find('td:first').text() == id;
-        });
-        $('#editCustomerId').val(id);
-        $('#editChildName').val(row.find('td').eq(1).text());
-        $('#editWechatName').val(row.find('td').eq(2).text());
-        $('#editGrade').val(row.find('td').eq(3).text());
-        $('#editPreferredTime').val(row.find('td').eq(4).text());
-        $('#editCompetitionExperience').val(row.find('td').eq(5).text());
-        $('#editNeeds').val(row.find('td').eq(6).text());
-        $('#editRecommendedClass').val(row.find('td').eq(7).text());
-        $('#editTrialTime').val(row.find('td').eq(8).text());
-        new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
-    }
-    function saveEditCustomer() {
-        const formData = new FormData();
-        formData.append('id', $('#editCustomerId').val());
-        formData.append('child_name', $('#editChildName').val());
-        formData.append('wechat_name', $('#editWechatName').val());
-        formData.append('grade', $('#editGrade').val());
-        formData.append('preferred_time', $('#editPreferredTime').val());
-        formData.append('competition_experience', $('#editCompetitionExperience').val());
-        formData.append('needs', $('#editNeeds').val());
-        formData.append('recommended_class', $('#editRecommendedClass').val());
-        formData.append('trial_time', $('#editTrialTime').val());
-        $.ajax({
-            url: '/api/edit_customer',
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    alert('保存成功！');
-                    bootstrap.Modal.getInstance(document.getElementById('editCustomerModal')).hide();
-                    window.location.reload();
-                } else {
-                    alert('保存失败：' + response.message);
-                }
-            },
-            error: function() {
-                alert('保存失败，请稍后重试');
-            }
-        });
-    }
-    // 这里可继续粘贴原有的客户和班级管理相关JS函数
-    function saveClass() {
-        const selectedGrades = [];
-        $('input[name="gradeLevel"]:checked').each(function() {
-            selectedGrades.push($(this).val());
-        });
-        const selectedTimeSlots = [];
-        $('input[name="classTimeSlot"]:checked').each(function() {
-            selectedTimeSlots.push($(this).val());
-        });
-        if (selectedGrades.length === 0) {
-            alert('请至少选择一个年级');
-            return;
         }
-        if (selectedTimeSlots.length === 0) {
-            alert('请至少选择一个时间段');
-            return;
-        }
-        const formData = new FormData();
-        formData.append('name', $('#className').val());
-        formData.append('grade_level', selectedGrades.join(','));
-        formData.append('description', $('#classDescription').val());
-        formData.append('time_slots', selectedTimeSlots.join(','));
-        const imageFile = $('#classImage')[0].files[0];
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
-        $.ajax({
-            url: '/admin/classes/save',
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    alert('保存成功！');
-                    bootstrap.Modal.getInstance(document.getElementById('classModal')).hide();
-                    window.location.reload();
-                } else {
-                    alert('保存失败：' + response.message);
-                }
-            },
-            error: function() {
-                alert('保存失败，请稍后重试');
-            }
-        });
-    }
-    function showAddClassModal() {
-        $('#modalTitle').text('添加新班级');
-        $('#classForm')[0].reset();
-        $('#classId').val('');
-        const modal = new bootstrap.Modal(document.getElementById('classModal'));
-        modal.show();
-    }
-    function deleteCustomer(id) {
-        if (confirm('确定要删除这条记录吗？')) {
+        function batchDeleteCustomers() {
+            const ids = $('.customer-checkbox:checked').map(function(){return $(this).val();}).get();
+            if (ids.length === 0) { alert('请至少选择一项'); return; }
+            if (!confirm('确定要批量删除选中的客户吗？')) return;
             $.ajax({
-                url: '/api/delete_customer',
+                url: '/api/delete_customers',
                 method: 'POST',
-                data: {id: id},
+                contentType: 'application/json',
+                data: JSON.stringify({ids: ids}),
                 success: function(response) {
                     if (response.success) {
-                        alert('删除成功！');
+                        alert('批量删除成功！');
                         window.location.reload();
                     } else {
                         alert('删除失败：' + response.message);
                     }
                 },
-                error: function() {
-                    alert('删除失败，请稍后重试');
-                }
+                error: function() { alert('删除失败，请稍后重试'); }
             });
         }
-    }
-    function batchDeleteCustomers() {
-        const ids = $('.customer-checkbox:checked').map(function(){return $(this).val();}).get();
-        if (ids.length === 0) { alert('请至少选择一项'); return; }
-        if (!confirm('确定要批量删除选中的客户吗？')) return;
-        $.ajax({
-            url: '/api/delete_customers',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ids: ids}),
-            success: function(response) {
-                if (response.success) {
-                    alert('批量删除成功！');
-                    window.location.reload();
-                } else {
-                    alert('删除失败：' + response.message);
-                }
-            },
-            error: function() { alert('删除失败，请稍后重试'); }
-        });
-    }
-    function editClass(id) {
-        // 这里应弹出编辑班级的模态框并填充数据
-        alert('编辑班级功能待完善，班级ID: ' + id);
-    }
-    function deleteClass(id) {
-        if (confirm('确定要删除这个班级吗？')) {
-            $.ajax({
-                url: '/admin/classes/delete/' + id,
-                method: 'POST',
-                success: function(response) {
-                    if (response.success) {
-                        alert('删除成功！');
-                        window.location.reload();
-                    } else {
-                        alert('删除失败：' + response.message);
+        function editClass(id) {
+            // 1. 找到表格行
+            var row = $('#classesTable tr').filter(function() {
+                return $(this).find('td').eq(0).text() == id;
+            });
+            // 2. 填充表单
+            $('#classId').val(id);
+            $('#className').val(row.find('td').eq(1).text());
+            $('#classDescription').val(row.find('td').eq(3).text());
+            // 年级复选框
+            var grades = row.find('td').eq(2).text().split(',');
+            $('input[name="gradeLevel"]').prop('checked', false);
+            grades.forEach(function(g) {
+                $('#grade' + g.trim()).prop('checked', true);
+            });
+            // 时间段复选框
+            var slots = row.find('td').eq(6).text().split(',');
+            $('input[name="classTimeSlot"]').prop('checked', false);
+            slots.forEach(function(s) {
+                $('input[name="classTimeSlot"][value="' + s.trim() + '"]').prop('checked', true);
+            });
+            // 3. 弹出模态框
+            var modal = new bootstrap.Modal(document.getElementById('classModal'));
+            modal.show();
+        }
+        function deleteClass(id) {
+            if (confirm('确定要删除这个班级吗？')) {
+                $.ajax({
+                    url: '/admin/classes/delete/' + id,
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            alert('删除成功！');
+                            window.location.reload();
+                        } else {
+                            alert('删除失败：' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('删除失败，请稍后重试');
                     }
-                },
-                error: function() {
-                    alert('删除失败，请稍后重试');
-                }
-            });
+                });
+            }
         }
-    }
-</script>
+    </script>
+</div>
 </body>
 </html> 
