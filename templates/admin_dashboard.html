@@ -132,18 +132,18 @@
                     <tbody class="text-center">
                         {% for customer in customers %}
                         <tr>
-                            <td><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"></td>
-                            <td>{{ customer.id }}</td>
+                            <td style="min-width:40px;"><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"></td>
+                            <td style="min-width:60px;">{{ customer.id }}</td>
                             <td style="min-width:120px;">{{ customer.child_name }}</td>
                             <td style="min-width:120px;">{{ customer.wechat_name }}</td>
-                            <td>{{ customer.grade }}</td>
-                            <td>{{ customer.preferred_time }}</td>
-                            <td>{{ customer.competition_experience }}</td>
-                            <td>{{ customer.needs }}</td>
-                            <td>{{ customer.recommended_class }}</td>
-                            <td><span class="trial-time-cell">{{ customer.future_trial_time or customer.trial_class_time or '未安排' }}</span></td>
-                            <td>{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>
+                            <td style="min-width:80px;">{{ customer.grade }}</td>
+                            <td style="min-width:120px;">{{ customer.preferred_time }}</td>
+                            <td style="min-width:80px;max-width:120px;">{{ customer.competition_experience }}</td>
+                            <td style="min-width:80px;max-width:120px;">{{ customer.needs }}</td>
+                            <td style="min-width:120px;">{{ customer.recommended_class }}</td>
+                            <td style="min-width:120px;"><span class="trial-time-cell">{{ customer.future_trial_time or customer.trial_class_time or '未安排' }}</span></td>
+                            <td style="min-width:120px;">{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td style="min-width:140px;">
                                 <button class="btn btn-info btn-sm rounded-pill me-1 px-4" onclick="editCustomer({{ customer.id }})">
                                     <i class="bi bi-pencil-square"></i> 编辑
                                 </button>
