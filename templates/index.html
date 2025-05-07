@@ -24,138 +24,169 @@
             border: 1px solid #dee2e6;
             border-radius: 5px;
         }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .step {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #888;
+            padding: 0 10px;
+        }
+        .step.active {
+            color: #007bff;
+        }
+        .step-arrow {
+            margin: 0 10px;
+            font-size: 1.2rem;
+        }
+        .btn-lg {
+            font-size: 1.25rem;
+            padding: 0.75rem 2rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="form-container">
-            <h2 class="text-center mb-4">曾老师奥数课咨询表</h2>
-            <form id="customerForm">
-                <div class="mb-3">
-                    <label for="child_name" class="form-label">孩子姓名</label>
-                    <input type="text" class="form-control" id="child_name" name="child_name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="wechat_name" class="form-label">家长微信名</label>
-                    <input type="text" class="form-control" id="wechat_name" name="wechat_name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="grade" class="form-label">年级</label>
-                    <select class="form-select" id="grade" name="grade" required>
-                        <option value="">请选择年级</option>
-                        <option value="G1">G1 (小学一年级)</option>
-                        <option value="G2">G2 (小学二年级)</option>
-                        <option value="G3">G3 (小学三年级)</option>
-                        <option value="G4">G4 (小学四年级)</option>
-                        <option value="G5">G5 (小学五年级)</option>
-                        <option value="G6">G6 (小学六年级)</option>
-                        <option value="G7">G7 (初中一年级)</option>
-                        <option value="G8">G8 (初中二年级)</option>
-                        <option value="G9">G9 (初中三年级)</option>
-                        <option value="G10">G10 (高中一年级)</option>
-                        <option value="G11">G11 (高中二年级)</option>
-                        <option value="G12">G12 (高中三年级)</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">上课时间偏好</label>
-                    <div id="preferred_time_group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周六上午10-12" id="pt1">
-                            <label class="form-check-label" for="pt1">周六上午 10:00-12:00</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周六中午1-3" id="pt2">
-                            <label class="form-check-label" for="pt2">周六中午 13:00-15:00</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周六下午3-5" id="pt3">
-                            <label class="form-check-label" for="pt3">周六下午 15:00-17:00</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周六下午5-7" id="pt4">
-                            <label class="form-check-label" for="pt4">周六下午 17:00-19:00</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周日上午10-12" id="pt5">
-                            <label class="form-check-label" for="pt5">周日上午 10:00-12:00</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周日中午1-3" id="pt6">
-                            <label class="form-check-label" for="pt6">周日中午 13:00-15:00</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周日下午3-5" id="pt7">
-                            <label class="form-check-label" for="pt7">周日下午 15:00-17:00</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="周日下午5-7" id="pt8">
-                            <label class="form-check-label" for="pt8">周日下午 17:00-19:00</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="preferred_time" value="工作日网课一对一" id="pt9">
-                            <label class="form-check-label" for="pt9">工作日网课一对一</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="competition_experience" class="form-label">竞赛成绩</label>
-                    <textarea class="form-control" id="competition_experience" name="competition_experience" rows="6" style="min-height: 150px;" placeholder="如有竞赛成绩请填写，没有可不填"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="needs" class="form-label">目前最大需求</label>
-                    <textarea class="form-control" id="needs" name="needs" rows="6" style="min-height: 150px;" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">提交信息</button>
-            </form>
-
-            <div id="classRecommendation" class="class-recommendation">
-                <h3>初步推荐班级</h3>
-                <div id="recommendedClassInfo"></div>
-                <div class="mt-3">
-                    <h4>试课安排</h4>
+            <div id="stepIndicator" class="step-indicator">
+                <span id="step1" class="step active">1. 填写信息</span>
+                <span class="step-arrow">→</span>
+                <span id="step2" class="step">2. 选择试课安排</span>
+            </div>
+            <div id="step1Content">
+                <h2 class="text-center mb-4">曾老师奥数课咨询表</h2>
+                <form id="customerForm">
                     <div class="mb-3">
-                        <button class="btn btn-success" onclick="scheduleTrial('now')">立即约课</button>
-                        <button class="btn btn-info" onclick="scheduleTrial('later')">未来预定</button>
+                        <label for="child_name" class="form-label">孩子姓名</label>
+                        <input type="text" class="form-control" id="child_name" name="child_name" required>
                     </div>
-                    <div id="trialTimeSelection" style="display: none;">
-                        <input type="date" class="form-control mb-2" id="trialDate">
-                        <select class="form-select mb-2" id="trialTimeSlot">
-                            <option value="10-12">早上 10:00-12:00</option>
-                            <option value="13-15">下午 13:00-15:00</option>
-                            <option value="15-17">下午 15:00-17:00</option>
-                            <option value="17-19">下午 17:00-19:00</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="confirmTrialTime()">确认试课时间</button>
+                    <div class="mb-3">
+                        <label for="wechat_name" class="form-label">家长微信名</label>
+                        <input type="text" class="form-control" id="wechat_name" name="wechat_name" required>
                     </div>
-                    <div id="futureBookingSelection" style="display: none;">
-                        <select class="form-select mb-2" id="futureYear">
-                            <option value="2024">2024年</option>
-                            <option value="2025">2025年</option>
-                            <option value="2026">2026年</option>
+                    <div class="mb-3">
+                        <label for="grade" class="form-label">年级</label>
+                        <select class="form-select" id="grade" name="grade" required>
+                            <option value="">请选择年级</option>
+                            <option value="G1">G1 (小学一年级)</option>
+                            <option value="G2">G2 (小学二年级)</option>
+                            <option value="G3">G3 (小学三年级)</option>
+                            <option value="G4">G4 (小学四年级)</option>
+                            <option value="G5">G5 (小学五年级)</option>
+                            <option value="G6">G6 (小学六年级)</option>
+                            <option value="G7">G7 (初中一年级)</option>
+                            <option value="G8">G8 (初中二年级)</option>
+                            <option value="G9">G9 (初中三年级)</option>
+                            <option value="G10">G10 (高中一年级)</option>
+                            <option value="G11">G11 (高中二年级)</option>
+                            <option value="G12">G12 (高中三年级)</option>
                         </select>
-                        <select class="form-select mb-2" id="futureMonth">
-                            <option value="1">1月</option>
-                            <option value="2">2月</option>
-                            <option value="3">3月</option>
-                            <option value="4">4月</option>
-                            <option value="5">5月</option>
-                            <option value="6">6月</option>
-                            <option value="7">7月</option>
-                            <option value="8">8月</option>
-                            <option value="9">9月</option>
-                            <option value="10">10月</option>
-                            <option value="11">11月</option>
-                            <option value="12">12月</option>
-                        </select>
-                        <select class="form-select mb-2" id="futurePeriod">
-                            <option value="上旬">上旬</option>
-                            <option value="中旬">中旬</option>
-                            <option value="下旬">下旬</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="confirmFutureBooking()">确认预定时间</button>
                     </div>
-                    <div id="trialArrangedInfo"></div>
+                    <div class="mb-3">
+                        <label class="form-label">上课时间偏好</label>
+                        <div id="preferred_time_group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周六上午10-12" id="pt1">
+                                <label class="form-check-label" for="pt1">周六上午 10:00-12:00</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周六中午1-3" id="pt2">
+                                <label class="form-check-label" for="pt2">周六中午 13:00-15:00</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周六下午3-5" id="pt3">
+                                <label class="form-check-label" for="pt3">周六下午 15:00-17:00</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周六下午5-7" id="pt4">
+                                <label class="form-check-label" for="pt4">周六下午 17:00-19:00</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周日上午10-12" id="pt5">
+                                <label class="form-check-label" for="pt5">周日上午 10:00-12:00</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周日中午1-3" id="pt6">
+                                <label class="form-check-label" for="pt6">周日中午 13:00-15:00</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周日下午3-5" id="pt7">
+                                <label class="form-check-label" for="pt7">周日下午 15:00-17:00</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周日下午5-7" id="pt8">
+                                <label class="form-check-label" for="pt8">周日下午 17:00-19:00</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="工作日网课一对一" id="pt9">
+                                <label class="form-check-label" for="pt9">工作日网课一对一</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="competition_experience" class="form-label">竞赛成绩</label>
+                        <textarea class="form-control" id="competition_experience" name="competition_experience" rows="6" style="min-height: 150px;" placeholder="如有竞赛成绩请填写，没有可不填"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="needs" class="form-label">目前最大需求</label>
+                        <textarea class="form-control" id="needs" name="needs" rows="6" style="min-height: 150px;" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">提交信息</button>
+                </form>
+            </div>
+            <div id="step2Content" style="display:none;">
+                <div id="classRecommendation" class="class-recommendation" style="display:block;">
+                    <h3>初步推荐班级</h3>
+                    <div id="recommendedClassInfo"></div>
+                    <div class="mt-3">
+                        <h4>试课安排</h4>
+                        <div class="mb-3">
+                            <button class="btn btn-success btn-lg me-3" onclick="scheduleTrial('now')">立即约课</button>
+                            <button class="btn btn-info btn-lg" onclick="scheduleTrial('later')">未来预定</button>
+                        </div>
+                        <div id="trialTimeSelection" style="display: none;">
+                            <input type="date" class="form-control mb-2" id="trialDate">
+                            <select class="form-select mb-2" id="trialTimeSlot">
+                                <option value="10-12">早上 10:00-12:00</option>
+                                <option value="13-15">下午 13:00-15:00</option>
+                                <option value="15-17">下午 15:00-17:00</option>
+                                <option value="17-19">下午 17:00-19:00</option>
+                            </select>
+                            <button class="btn btn-primary btn-lg" onclick="confirmTrialTime()">确认试课时间</button>
+                        </div>
+                        <div id="futureBookingSelection" style="display: none;">
+                            <select class="form-select mb-2" id="futureYear">
+                                <option value="2024">2024年</option>
+                                <option value="2025">2025年</option>
+                                <option value="2026">2026年</option>
+                            </select>
+                            <select class="form-select mb-2" id="futureMonth">
+                                <option value="1">1月</option>
+                                <option value="2">2月</option>
+                                <option value="3">3月</option>
+                                <option value="4">4月</option>
+                                <option value="5">5月</option>
+                                <option value="6">6月</option>
+                                <option value="7">7月</option>
+                                <option value="8">8月</option>
+                                <option value="9">9月</option>
+                                <option value="10">10月</option>
+                                <option value="11">11月</option>
+                                <option value="12">12月</option>
+                            </select>
+                            <select class="form-select mb-2" id="futurePeriod">
+                                <option value="上旬">上旬</option>
+                                <option value="中旬">中旬</option>
+                                <option value="下旬">下旬</option>
+                            </select>
+                            <button class="btn btn-primary btn-lg" onclick="confirmFutureBooking()">确认预定时间</button>
+                        </div>
+                        <div id="trialArrangedInfo"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,6 +200,7 @@
         document.getElementById('customerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn.disabled) return; // 防止极端情况下多次触发
             submitBtn.disabled = true; // 禁用按钮，防止重复提交
             const form = e.target;
             const formData = new FormData(form);
@@ -182,10 +214,13 @@
                     body: formData
                 });
                 const data = await response.json();
-                
                 if (data.success) {
-                    savedCustomerId = data.customer_id;
-                    document.getElementById('classRecommendation').style.display = 'block';
+                    // 切换到第二步
+                    document.getElementById('step1Content').style.display = 'none';
+                    document.getElementById('step2Content').style.display = 'block';
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step2').classList.add('active');
+                    // 推荐班级内容填充
                     let html = '';
                     if (data.recommended_classes.length === 0) {
                         html = '<div class="alert alert-warning">暂无适合的班级推荐。</div>';
@@ -210,9 +245,10 @@
                     }
                     document.getElementById('recommendedClassInfo').innerHTML = html;
                     updateTrialTimeSlotOptions();
+                } else {
+                    alert('提交失败：' + data.message);
                 }
             } catch (error) {
-                console.error('Error:', error);
                 alert('提交失败，请稍后重试');
             } finally {
                 submitBtn.disabled = false; // 恢复按钮
