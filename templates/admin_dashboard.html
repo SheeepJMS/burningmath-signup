@@ -47,6 +47,18 @@
         #customersTable_wrapper .dataTables_scrollBody {
             overflow-x: auto !important;
         }
+        /* 竞赛成绩和需求列自动换行，最大宽度240px */
+        .competition-cell, .needs-cell {
+            white-space: normal !important;
+            word-break: break-all;
+            max-width: 240px;
+        }
+        /* 推荐班级列缩小宽度 */
+        .recommend-class-cell {
+            min-width: 40px !important;
+            max-width: 60px !important;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -112,49 +124,51 @@
                 <button class="btn btn-success ms-2" onclick="batchConfirmTrial()">确认试课</button>
             </div>
             <div class="table-responsive">
-                <table class="table table-striped table-hover table-bordered align-middle" id="customersTable" style="width:100%;">
-                    <thead class="table-dark text-center">
-                        <tr>
-                            <th style="min-width:40px;"><input type="checkbox" id="selectAllCustomers"></th>
-                            <th style="min-width:60px;">ID</th>
-                            <th style="min-width:120px;">孩子姓名</th>
-                            <th style="min-width:120px;">家长微信名</th>
-                            <th style="min-width:80px;">年级</th>
-                            <th style="min-width:120px;">时间偏好</th>
-                            <th style="min-width:80px;max-width:120px;">竞赛成绩</th>
-                            <th style="min-width:80px;max-width:120px;">需求</th>
-                            <th style="min-width:120px;">推荐班级</th>
-                            <th style="min-width:120px;">试课时间</th>
-                            <th style="min-width:120px;">提交时间</th>
-                            <th style="min-width:140px;">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-center">
-                        {% for customer in customers %}
-                        <tr>
-                            <td style="min-width:40px;"><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"></td>
-                            <td style="min-width:60px;">{{ customer.id }}</td>
-                            <td style="min-width:120px;">{{ customer.child_name }}</td>
-                            <td style="min-width:120px;">{{ customer.wechat_name }}</td>
-                            <td style="min-width:80px;">{{ customer.grade }}</td>
-                            <td style="min-width:120px;">{{ customer.preferred_time }}</td>
-                            <td style="min-width:80px;max-width:120px;">{{ customer.competition_experience }}</td>
-                            <td style="min-width:80px;max-width:120px;">{{ customer.needs }}</td>
-                            <td style="min-width:120px;">{{ customer.recommended_class }}</td>
-                            <td style="min-width:120px;"><span class="trial-time-cell">{{ customer.future_trial_time or customer.trial_class_time or '未安排' }}</span></td>
-                            <td style="min-width:120px;">{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td style="min-width:140px;">
-                                <button class="btn btn-info btn-sm rounded-pill me-1 px-4" onclick="editCustomer({{ customer.id }})">
-                                    <i class="bi bi-pencil-square"></i> 编辑
-                                </button>
-                                <button class="btn btn-danger btn-sm rounded-pill px-4" onclick="deleteCustomer({{ customer.id }})">
-                                    <i class="bi bi-trash"></i> 删除
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div style="overflow-x:auto;">
+                    <table class="table table-striped table-hover table-bordered align-middle" id="customersTable" style="width:100%;">
+                        <thead class="table-dark text-center">
+                            <tr>
+                                <th style="min-width:40px;"><input type="checkbox" id="selectAllCustomers"></th>
+                                <th style="min-width:60px;">ID</th>
+                                <th style="min-width:120px;">孩子姓名</th>
+                                <th style="min-width:120px;">家长微信名</th>
+                                <th style="min-width:80px;">年级</th>
+                                <th style="min-width:120px;">时间偏好</th>
+                                <th style="min-width:120px;">竞赛成绩</th>
+                                <th style="min-width:120px;">需求</th>
+                                <th style="min-width:40px;max-width:60px;">推荐班级</th>
+                                <th style="min-width:120px;">试课时间</th>
+                                <th style="min-width:120px;">提交时间</th>
+                                <th style="min-width:140px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            {% for customer in customers %}
+                            <tr>
+                                <td style="min-width:40px;"><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"></td>
+                                <td style="min-width:60px;">{{ customer.id }}</td>
+                                <td style="min-width:120px;">{{ customer.child_name }}</td>
+                                <td style="min-width:120px;">{{ customer.wechat_name }}</td>
+                                <td style="min-width:80px;">{{ customer.grade }}</td>
+                                <td style="min-width:120px;">{{ customer.preferred_time }}</td>
+                                <td class="competition-cell">{{ customer.competition_experience }}</td>
+                                <td class="needs-cell">{{ customer.needs }}</td>
+                                <td class="recommend-class-cell">{{ customer.recommended_class }}</td>
+                                <td style="min-width:120px;"><span class="trial-time-cell">{{ customer.future_trial_time or customer.trial_class_time or '未安排' }}</span></td>
+                                <td style="min-width:120px;">{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td style="min-width:140px;">
+                                    <button class="btn btn-info btn-sm rounded-pill me-1 px-4" onclick="editCustomer({{ customer.id }})">
+                                        <i class="bi bi-pencil-square"></i> 编辑
+                                    </button>
+                                    <button class="btn btn-danger btn-sm rounded-pill px-4" onclick="deleteCustomer({{ customer.id }})">
+                                        <i class="bi bi-trash"></i> 删除
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <!-- 编辑客户信息的模态框 -->
             <div class="modal fade" id="editCustomerModal" tabindex="-1">
