@@ -156,8 +156,13 @@ def set_trial_time():
     return jsonify(success=True)
 
 def recommend_classes(grade):
-    # 查询所有包含该年级的班级
-    classes = ClassInfo.query.filter(ClassInfo.grade_level.like(f"%{grade}%")).all()
+    # 查询所有包含该年级的班级，使用更精确的匹配
+    classes = ClassInfo.query.filter(
+        (ClassInfo.grade_level == grade) |  # 完全匹配
+        (ClassInfo.grade_level.like(f"{grade},%")) |  # 开头匹配
+        (ClassInfo.grade_level.like(f"%,{grade},%")) |  # 中间匹配
+        (ClassInfo.grade_level.like(f"%,{grade}"))  # 结尾匹配
+    ).all()
     result = []
     for c in classes:
         result.append({
