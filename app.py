@@ -193,6 +193,15 @@ def delete_customer():
     db.session.commit()
     return jsonify(success=True)
 
+@app.route('/admin/classes/delete/<int:id>', methods=['POST'])
+def delete_class(id):
+    class_obj = ClassInfo.query.get(id)
+    if not class_obj:
+        return jsonify(success=False, message='班级不存在')
+    db.session.delete(class_obj)
+    db.session.commit()
+    return jsonify(success=True)
+
 # 保证无论本地还是线上都能自动建表
 with app.app_context():
     db.create_all()
