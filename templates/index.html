@@ -168,6 +168,8 @@
 
         document.getElementById('customerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true; // 禁用按钮，防止重复提交
             const form = e.target;
             const formData = new FormData(form);
             // 处理preferred_time多选
@@ -212,6 +214,8 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert('提交失败，请稍后重试');
+            } finally {
+                submitBtn.disabled = false; // 恢复按钮
             }
         });
 
