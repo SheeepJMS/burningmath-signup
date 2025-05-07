@@ -34,6 +34,19 @@
         .btn-sm {
             font-size: 0.95em;
         }
+        /* 客户管理表格对齐和滚动优化 */
+        #customersTable {
+            width: 100% !important;
+        }
+        #customersTable th, #customersTable td {
+            white-space: nowrap;
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px;
+        }
+        #customersTable_wrapper .dataTables_scrollBody {
+            overflow-x: auto !important;
+        }
     </style>
 </head>
 <body>
@@ -45,6 +58,9 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="class-tab" data-bs-toggle="tab" data-bs-target="#classPanel" type="button" role="tab">班级管理</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="trial-tab" href="/trial_management">试课管理</a>
         </li>
     </ul>
     <div class="tab-content">
@@ -93,23 +109,24 @@
             </div>
             <div class="mb-2">
                 <button class="btn btn-danger" onclick="batchDeleteCustomers()">批量删除</button>
+                <button class="btn btn-success ms-2" onclick="batchConfirmTrial()">确认试课</button>
             </div>
             <div class="table-responsive">
-                <table class="table table-striped table-hover table-bordered align-middle" id="customersTable">
+                <table class="table table-striped table-hover table-bordered align-middle" id="customersTable" style="width:100%;">
                     <thead class="table-dark text-center">
                         <tr>
-                            <th style="width:40px;"><input type="checkbox" id="selectAllCustomers"></th>
-                            <th style="width:60px;">ID</th>
-                            <th style="min-width:180px;">孩子姓名</th>
-                            <th style="min-width:180px;">家长微信名</th>
-                            <th style="width:90px;">年级</th>
-                            <th style="width:160px;">时间偏好</th>
+                            <th style="min-width:40px;"><input type="checkbox" id="selectAllCustomers"></th>
+                            <th style="min-width:60px;">ID</th>
+                            <th style="min-width:120px;">孩子姓名</th>
+                            <th style="min-width:120px;">家长微信名</th>
+                            <th style="min-width:80px;">年级</th>
+                            <th style="min-width:120px;">时间偏好</th>
                             <th style="min-width:80px;max-width:120px;">竞赛成绩</th>
                             <th style="min-width:80px;max-width:120px;">需求</th>
-                            <th style="width:120px;">推荐班级</th>
-                            <th style="width:140px;">试课时间</th>
-                            <th style="width:140px;">提交时间</th>
-                            <th style="min-width:160px;">操作</th>
+                            <th style="min-width:120px;">推荐班级</th>
+                            <th style="min-width:120px;">试课时间</th>
+                            <th style="min-width:120px;">提交时间</th>
+                            <th style="min-width:140px;">操作</th>
                         </tr>
                     </thead>
                     <tbody class="text-center">
@@ -117,28 +134,16 @@
                         <tr>
                             <td><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"></td>
                             <td>{{ customer.id }}</td>
-                            <td style="min-width:180px;">{{ customer.child_name }}</td>
-                            <td style="min-width:180px;">{{ customer.wechat_name }}</td>
-                            <td style="min-width:120px;max-width:180px;">{{ customer.grade }}</td>
-                            <td style="min-width:160px;">{{ customer.preferred_time }}</td>
-                            <td style="min-width:80px;max-width:120px;">
-                                <div class="text-wrap" style="max-height: 100px; overflow-y: auto;">
-                                    {{ customer.competition_experience }}
-                                </div>
-                            </td>
-                            <td style="min-width:80px;max-width:120px;">
-                                <div class="text-wrap" style="max-height: 100px; overflow-y: auto;">
-                                    {{ customer.needs }}
-                                </div>
-                            </td>
-                            <td style="min-width:120px;">{{ customer.recommended_class }}</td>
-                            <td style="min-width:140px;">
-                                <span class="trial-time-cell">
-                                    {{ customer.future_trial_time or customer.trial_class_time or '未安排' }}
-                                </span>
-                            </td>
-                            <td style="min-width:140px;">{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td style="min-width:160px;">
+                            <td style="min-width:120px;">{{ customer.child_name }}</td>
+                            <td style="min-width:120px;">{{ customer.wechat_name }}</td>
+                            <td>{{ customer.grade }}</td>
+                            <td>{{ customer.preferred_time }}</td>
+                            <td>{{ customer.competition_experience }}</td>
+                            <td>{{ customer.needs }}</td>
+                            <td>{{ customer.recommended_class }}</td>
+                            <td><span class="trial-time-cell">{{ customer.future_trial_time or customer.trial_class_time or '未安排' }}</span></td>
+                            <td>{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
                                 <button class="btn btn-info btn-sm rounded-pill me-1 px-4" onclick="editCustomer({{ customer.id }})">
                                     <i class="bi bi-pencil-square"></i> 编辑
                                 </button>
@@ -396,6 +401,12 @@
                 },
                 pageLength: 100,
                 stateSave: true,
+                scrollX: true,
+                autoWidth: true,
+                fixedHeader: true,
+                columnDefs: [
+                    { targets: '_all', className: 'text-center' }
+                ],
                 drawCallback: function(settings) {
                     $('#customersTable .trial-time-cell').each(function() {
                         const text = $(this).text().trim();
@@ -427,6 +438,9 @@
                     });
                 }
             });
+            setTimeout(function() {
+                table.columns.adjust().draw(false);
+            }, 300);
             // 全选/反选
             $('#selectAllCustomers').on('change', function() {
                 const checked = $(this).prop('checked');
@@ -629,6 +643,26 @@
                     }
                 });
             }
+        }
+        function batchConfirmTrial() {
+            const ids = $('.customer-checkbox:checked').map(function(){return $(this).val();}).get();
+            if (ids.length === 0) { alert('请至少选择一项'); return; }
+            if (!confirm('确定要将选中客户批量加入试课管理吗？')) return;
+            $.ajax({
+                url: '/api/batch_confirm_trial',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ids: ids}),
+                success: function(response) {
+                    if (response.success) {
+                        alert('批量确认试课成功！');
+                        window.open('/trial_management', '_blank');
+                    } else {
+                        alert('操作失败：' + response.message);
+                    }
+                },
+                error: function() { alert('操作失败，请稍后重试'); }
+            });
         }
     </script>
 </div>

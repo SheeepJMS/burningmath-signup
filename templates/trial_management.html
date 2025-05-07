@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>试课管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/datatables@1.10.18/media/css/jquery.dataTables.min.css" rel="stylesheet">
+    <style>
+        .table-responsive { margin-top: 2rem; }
+        .btn-sm { font-size: 0.95em; }
+        /* 表格对齐和滚动优化 */
+        #trialTable {
+            width: 100% !important;
+        }
+        #trialTable th, #trialTable td {
+            white-space: nowrap;
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px;
+        }
+        #trialTable thead th {
+            position: relative;
+            background-color: #212529 !important;
+        }
+        #trialTable_wrapper .dataTables_scrollBody {
+            overflow-x: auto !important;
+        }
+    </style>
+</head>
+<body>
+<div class="container-xl py-4">
+    <h2 class="mb-4">试课管理</h2>
+    <a href="/admin/dashboard" class="btn btn-secondary mb-3">返回后台</a>
+    <table class="table table-striped table-hover table-bordered align-middle" id="trialTable" style="width:100%;">
+        <thead class="table-dark text-center">
+            <tr>
+                <th style="min-width:60px;">ID</th>
+                <th style="min-width:120px;">孩子姓名</th>
+                <th style="min-width:120px;">家长微信名</th>
+                <th style="min-width:80px;">年级</th>
+                <th style="min-width:120px;">试课时间</th>
+                <th style="min-width:140px;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in records %}
+            <tr>
+                <td>{{ r.id }}</td>
+                <td style="min-width:120px;">{{ r.child_name }}</td>
+                <td style="min-width:120px;">{{ r.wechat_name }}</td>
+                <td>{{ r.grade }}</td>
+                <td><span class="trial-time-cell">{{ r.trial_time or '未安排' }}</span></td>
+                <td>
+                    <button class="btn btn-info btn-sm me-1 edit-trial-btn" 
+                            data-id="{{ r.id }}" 
+                            data-time="{{ r.trial_time or '' }}">编辑</button>
+                    <button class="btn btn-danger btn-sm delete-trial-btn" 
+                            data-id="{{ r.id }}">删除</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 编辑试课时间模态框 -->
+<div class="modal fade" id="editTrialModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑试课时间</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editTrialForm">
+                    <input type="hidden" id="editTrialId">
+                    <div class="mb-3">
+                        <label class="form-label">试课时间</label>
+                        <input type="text" class="form-control" id="editTrialTime" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveEditTrial()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+    var table = $('#trialTable').DataTable({
+        language: { url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json' },
+        scrollX: true,
+        autoWidth: true,
+        fixedHeader: true,
+        columnDefs: [
+            { targets: '_all', className: 'text-center' }
+        ]
+    });
+    setTimeout(function() {
+        table.columns.adjust().draw(false);
+    }, 300);
+
+    // 编辑按钮点击事件
+    $('.edit-trial-btn').on('click', function() {
+        var id = $(this).data('id');
+        var time = $(this).data('time');
+        editTrial(id, time);
+    });
+
+    // 删除按钮点击事件
+    $('.delete-trial-btn').on('click', function() {
+        var id = $(this).data('id');
+        deleteTrial(id);
+    });
+});
+
+function editTrial(id, time) {
+    $('#editTrialId').val(id);
+    $('#editTrialTime').val(time);
+    new bootstrap.Modal(document.getElementById('editTrialModal')).show();
+}
+function saveEditTrial() {
+    var id = $('#editTrialId').val();
+    var time = $('#editTrialTime').val();
+    if (!time) { alert('请输入试课时间'); return; }
+    $.post('/api/edit_trial', {id: id, trial_time: time}, function(resp) {
+        if (resp.success) {
+            alert('保存成功！');
+            location.reload();
+        } else {
+            alert('保存失败：' + resp.message);
+        }
+    });
+}
+function deleteTrial(id) {
+    if (!confirm('确定要删除这条试课记录吗？')) return;
+    $.post('/api/delete_trial', {id: id}, function(resp) {
+        if (resp.success) {
+            alert('删除成功！');
+            location.reload();
+        } else {
+            alert('删除失败：' + resp.message);
+        }
+    });
+}
+</script>
+</body>
+</html> 

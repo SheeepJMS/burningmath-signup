@@ -44,6 +44,16 @@ class ClassInfo(db.Model):
     time_slots = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+# 试课记录模型
+class TrialRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
+    child_name = db.Column(db.String(100))
+    wechat_name = db.Column(db.String(100))
+    grade = db.Column(db.String(50))
+    trial_time = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -214,6 +224,64 @@ def delete_customers():
     except Exception as e:
         db.session.rollback()
         return jsonify(success=False, message=str(e))
+
+@app.route('/api/batch_confirm_trial', methods=['POST'])
+def batch_confirm_trial():
+    ids = request.json.get('ids', [])
+    if not ids:
+        return jsonify(success=False, message='未选择客户')
+    try:
+        for cid in ids:
+            customer = Customer.query.get(cid)
+            if not customer:
+                continue
+            # 避免重复添加
+            exists = TrialRecord.query.filter_by(customer_id=cid).first()
+            if exists:
+                continue
+            record = TrialRecord(
+                customer_id=cid,
+                child_name=customer.child_name,
+                wechat_name=customer.wechat_name,
+                grade=customer.grade,
+                trial_time=customer.trial_class_time or customer.future_trial_time or ''
+            )
+            db.session.add(record)
+        db.session.commit()
+        return jsonify(success=True)
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(success=False, message=str(e))
+
+@app.route('/trial_management')
+def trial_management():
+    records = TrialRecord.query.order_by(TrialRecord.created_at.desc()).all()
+    return render_template('trial_management.html', records=records)
+
+@app.route('/api/edit_trial', methods=['POST'])
+def edit_trial():
+    tid = request.form.get('id')
+    trial_time = request.form.get('trial_time')
+    record = TrialRecord.query.get(tid)
+    if not record:
+        return jsonify(success=False, message='试课记录不存在')
+    record.trial_time = trial_time
+    # 同步到客户表
+    customer = Customer.query.get(record.customer_id)
+    if customer:
+        customer.trial_class_time = trial_time
+        db.session.commit()
+    return jsonify(success=True)
+
+@app.route('/api/delete_trial', methods=['POST'])
+def delete_trial():
+    tid = request.form.get('id')
+    record = TrialRecord.query.get(tid)
+    if not record:
+        return jsonify(success=False, message='试课记录不存在')
+    db.session.delete(record)
+    db.session.commit()
+    return jsonify(success=True)
 
 # 保证无论本地还是线上都能自动建表
 with app.app_context():
