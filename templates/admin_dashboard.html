@@ -394,7 +394,37 @@
                 url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
             },
             pageLength: 100,
-            stateSave: true
+            stateSave: true,
+            drawCallback: function(settings) {
+                $('#customersTable .trial-time-cell').each(function() {
+                    const text = $(this).text().trim();
+                    if (!text || text === '未安排') {
+                        $(this).css({'background':'#e9ecef', 'color':'#888', 'font-weight':'normal'}); // 未安排灰色
+                        return;
+                    }
+                    // 解析日期和时间
+                    let dateStr = text.split(' ')[0];
+                    let timeStr = text.split(' ')[1] || '00:00';
+                    if (timeStr && timeStr.match(/\d{1,2}-\d{1,2}/)) {
+                        timeStr = timeStr.split('-')[0] + ':00';
+                    }
+                    let dt = new Date(dateStr + 'T' + timeStr);
+                    if (isNaN(dt.getTime())) {
+                        $(this).css({'background':'#e9ecef', 'color':'#888', 'font-weight':'normal'}); // 解析失败也灰色
+                        return;
+                    }
+                    const now = new Date();
+                    const diffMs = dt - now;
+                    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+                    if (diffDays < 0) {
+                        $(this).css({'background':'#ffcccc', 'color':'#a00', 'font-weight':'bold'}); // 已发生红色
+                    } else if (diffDays <= 14) {
+                        $(this).css({'background':'#fff3cd', 'color':'#b8860b', 'font-weight':'bold'}); // 未来两周黄色
+                    } else {
+                        $(this).css({'background':'#d4edda', 'color':'#155724', 'font-weight':'bold'}); // 其它绿色
+                    }
+                });
+            }
         });
         // 全选/反选
         $('#selectAllCustomers').on('change', function() {
@@ -410,35 +440,6 @@
         $('#classesTable').DataTable({
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
-            }
-        });
-
-        // 试课时间着色
-        $('#customersTable .trial-time-cell').each(function() {
-            const text = $(this).text().trim();
-            if (!text || text === '未安排') return;
-
-            // 尝试解析日期时间
-            let dateStr = text.split(' ')[0];
-            let timeStr = text.split(' ')[1] || '00:00';
-            // 处理"10-12"这种时间段
-            if (timeStr && timeStr.match(/\d{1,2}-\d{1,2}/)) {
-                timeStr = timeStr.split('-')[0] + ':00';
-            }
-            let dt = new Date(dateStr + 'T' + timeStr);
-
-            if (isNaN(dt.getTime())) return; // 解析失败
-
-            const now = new Date();
-            const diffMs = dt - now;
-            const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-            if (diffDays < 0 || diffDays <= 7) {
-                $(this).css({'background':'#ffcccc', 'color':'#a00', 'font-weight':'bold'}); // 红色
-            } else if (diffDays <= 30) {
-                $(this).css({'background':'#fff3cd', 'color':'#b8860b', 'font-weight':'bold'}); // 黄色
-            } else {
-                $(this).css({'background':'#d4edda', 'color':'#155724', 'font-weight':'bold'}); // 绿色
             }
         });
     });
@@ -563,6 +564,7 @@
                 }
             });
         }
+    }
     function batchDeleteCustomers() {
         const ids = $('.customer-checkbox:checked').map(function(){return $(this).val();}).get();
         if (ids.length === 0) { alert('请至少选择一项'); return; }
@@ -582,6 +584,29 @@
             },
             error: function() { alert('删除失败，请稍后重试'); }
         });
+    }
+    function editClass(id) {
+        // 这里应弹出编辑班级的模态框并填充数据
+        alert('编辑班级功能待完善，班级ID: ' + id);
+    }
+    function deleteClass(id) {
+        if (confirm('确定要删除这个班级吗？')) {
+            $.ajax({
+                url: '/admin/classes/delete/' + id,
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        alert('删除成功！');
+                        window.location.reload();
+                    } else {
+                        alert('删除失败：' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('删除失败，请稍后重试');
+                }
+            });
+        }
     }
 </script>
 </body>
