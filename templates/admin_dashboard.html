@@ -91,10 +91,14 @@
                     </div>
                 </div>
             </div>
+            <div class="mb-2">
+                <button class="btn btn-danger" onclick="batchDeleteCustomers()">批量删除</button>
+            </div>
             <div class="table-responsive">
                 <table class="table table-striped table-hover table-bordered align-middle" id="customersTable">
                     <thead class="table-dark text-center">
                         <tr>
+                            <th><input type="checkbox" id="selectAllCustomers"></th>
                             <th>ID</th>
                             <th>孩子姓名</th>
                             <th>家长微信名</th>
@@ -111,6 +115,7 @@
                     <tbody class="text-center">
                         {% for customer in customers %}
                         <tr>
+                            <td><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"></td>
                             <td>{{ customer.id }}</td>
                             <td>{{ customer.child_name }}</td>
                             <td>{{ customer.wechat_name }}</td>
@@ -384,9 +389,22 @@
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#customersTable').DataTable({
+        var table = $('#customersTable').DataTable({
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
+            },
+            pageLength: 100,
+            stateSave: true
+        });
+        // 全选/反选
+        $('#selectAllCustomers').on('change', function() {
+            const checked = $(this).prop('checked');
+            $('.customer-checkbox').prop('checked', checked);
+        });
+        // 单个checkbox取消全选
+        $(document).on('change', '.customer-checkbox', function() {
+            if (!$(this).prop('checked')) {
+                $('#selectAllCustomers').prop('checked', false);
             }
         });
         $('#classesTable').DataTable({
@@ -545,6 +563,25 @@
                 }
             });
         }
+    function batchDeleteCustomers() {
+        const ids = $('.customer-checkbox:checked').map(function(){return $(this).val();}).get();
+        if (ids.length === 0) { alert('请至少选择一项'); return; }
+        if (!confirm('确定要批量删除选中的客户吗？')) return;
+        $.ajax({
+            url: '/api/delete_customers',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ids: ids}),
+            success: function(response) {
+                if (response.success) {
+                    alert('批量删除成功！');
+                    window.location.reload();
+                } else {
+                    alert('删除失败：' + response.message);
+                }
+            },
+            error: function() { alert('删除失败，请稍后重试'); }
+        });
     }
 </script>
 </body>

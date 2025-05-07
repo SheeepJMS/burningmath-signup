@@ -202,6 +202,19 @@ def delete_class(id):
     db.session.commit()
     return jsonify(success=True)
 
+@app.route('/api/delete_customers', methods=['POST'])
+def delete_customers():
+    ids = request.get_json().get('ids', [])
+    if not ids:
+        return jsonify(success=False, message='未提供ID')
+    try:
+        Customer.query.filter(Customer.id.in_(ids)).delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify(success=True)
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(success=False, message=str(e))
+
 # 保证无论本地还是线上都能自动建表
 with app.app_context():
     db.create_all()
