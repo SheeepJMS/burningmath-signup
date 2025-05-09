@@ -29,9 +29,9 @@ class Customer(db.Model):
     preferred_time = db.Column(db.String(200))
     competition_experience = db.Column(db.Text)
     needs = db.Column(db.Text)
-    recommended_class = db.Column(db.String(100))  # 初步推荐班级
-    trial_class_time = db.Column(db.DateTime)
-    future_trial_time = db.Column(db.String(100))
+    recommended_class = db.Column(db.String(100))
+    trial_class_time = db.Column(db.Date)  # 只存日期
+    future_trial_time = db.Column(db.String(100))  # 未来预定字符串
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # 班级信息模型
@@ -51,7 +51,9 @@ class TrialRecord(db.Model):
     child_name = db.Column(db.String(100))
     wechat_name = db.Column(db.String(100))
     grade = db.Column(db.String(50))
-    trial_time = db.Column(db.String(100))
+    trial_time = db.Column(db.Date)  # 只存日期
+    trial_time_slot = db.Column(db.String(50))  # 新增时间段
+    remark = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 @app.route('/')
@@ -145,13 +147,24 @@ def admin_classes_save():
 @app.route('/api/set_trial_time', methods=['POST'])
 def set_trial_time():
     customer_id = request.form.get('customer_id')
-    trial_time = request.form.get('trial_time')  # 字符串，如"2024-05-10 10-12"或"2024年5月上旬"
-
+    trial_time = request.form.get('trial_time')
+    trial_time_slot = request.form.get('trial_time_slot')
+    future_trial_time = request.form.get('future_trial_time')
     customer = Customer.query.get(customer_id)
     if not customer:
         return jsonify(success=False, message='客户不存在')
-
-    customer.future_trial_time = trial_time
+    from datetime import datetime
+    if future_trial_time:
+        customer.trial_class_time = None
+        customer.future_trial_time = future_trial_time
+    else:
+        if trial_time:
+            try:
+                customer.trial_class_time = datetime.strptime(trial_time, '%Y-%m-%d').date()
+            except Exception:
+                return jsonify(success=False, message='日期格式错误')
+        if trial_time_slot is not None:
+            customer.future_trial_time = trial_time_slot
     db.session.commit()
     return jsonify(success=True)
 
@@ -267,15 +280,30 @@ def trial_management():
 def edit_trial():
     tid = request.form.get('id')
     trial_time = request.form.get('trial_time')
+    trial_time_slot = request.form.get('trial_time_slot')
+    future_trial_time = request.form.get('future_trial_time')
+    remark = request.form.get('remark')
     record = TrialRecord.query.get(tid)
     if not record:
         return jsonify(success=False, message='试课记录不存在')
-    record.trial_time = trial_time
-    # 同步到客户表
-    customer = Customer.query.get(record.customer_id)
-    if customer:
-        customer.trial_class_time = trial_time
-        db.session.commit()
+    from datetime import datetime
+    if future_trial_time:
+        record.trial_time = None
+        record.trial_time_slot = None
+        record.remark = remark
+        record.future_trial_time = future_trial_time
+    else:
+        if trial_time:
+            try:
+                record.trial_time = datetime.strptime(trial_time, '%Y-%m-%d').date()
+            except Exception:
+                return jsonify(success=False, message='日期格式错误')
+        if trial_time_slot is not None:
+            record.trial_time_slot = trial_time_slot
+        if remark is not None:
+            record.remark = remark
+        record.future_trial_time = None
+    db.session.commit()
     return jsonify(success=True)
 
 @app.route('/api/delete_trial', methods=['POST'])

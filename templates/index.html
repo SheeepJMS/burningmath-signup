@@ -151,10 +151,12 @@
                         <div id="trialTimeSelection" style="display: none;">
                             <input type="date" class="form-control mb-2" id="trialDate">
                             <select class="form-select mb-2" id="trialTimeSlot">
-                                <option value="10-12">早上 10:00-12:00</option>
-                                <option value="13-15">下午 13:00-15:00</option>
-                                <option value="15-17">下午 15:00-17:00</option>
-                                <option value="17-19">下午 17:00-19:00</option>
+                                <option value="">请选择时间段</option>
+                                <option value="早上10-12">早上 10:00-12:00</option>
+                                <option value="下午1-3">下午 13:00-15:00</option>
+                                <option value="下午3-5">下午 15:00-17:00</option>
+                                <option value="下午5-7">下午 17:00-19:00</option>
+                                <option value="工作日一对一">工作日一对一</option>
                             </select>
                             <button class="btn btn-primary btn-lg" onclick="confirmTrialTime()">确认试课时间</button>
                         </div>
@@ -270,7 +272,8 @@
         async function confirmTrialTime() {
             const trialDate = document.getElementById('trialDate').value;
             const trialTimeSlot = document.getElementById('trialTimeSlot').value;
-            if (trialDate && trialTimeSlot && savedCustomerId) {
+            console.log('trialDate:', trialDate, 'trialTimeSlot:', trialTimeSlot, 'savedCustomerId:', savedCustomerId);
+            if (trialDate && trialTimeSlot && trialTimeSlot !== '' && savedCustomerId) {
                 // 禁用按钮
                 document.querySelectorAll('.btn-success, .btn-info').forEach(btn => btn.disabled = true);
                 document.getElementById('trialTimeSelection').style.display = 'none';
@@ -281,7 +284,8 @@
                 // 写入数据库
                 const formData = new FormData();
                 formData.append('customer_id', savedCustomerId);
-                formData.append('trial_time', detail);
+                formData.append('trial_time', trialDate);
+                formData.append('trial_time_slot', trialTimeSlot);
                 await fetch('/api/set_trial_time', {
                     method: 'POST',
                     body: formData
@@ -306,7 +310,7 @@
                 // 写入数据库
                 const formData = new FormData();
                 formData.append('customer_id', savedCustomerId);
-                formData.append('trial_time', detail);
+                formData.append('future_trial_time', detail);
                 await fetch('/api/set_trial_time', {
                     method: 'POST',
                     body: formData

@@ -476,17 +476,17 @@
         function editCustomer(id) {
             // 获取表格中该客户的所有信息
             const row = $(`#customersTable tr`).filter(function() {
-                return $(this).find('td:first').text() == id;
+                return $(this).find('td').eq(1).text() == id;
             });
             $('#editCustomerId').val(id);
-            $('#editChildName').val(row.find('td').eq(1).text());
-            $('#editWechatName').val(row.find('td').eq(2).text());
-            $('#editGrade').val(row.find('td').eq(3).text());
-            $('#editPreferredTime').val(row.find('td').eq(4).text());
-            $('#editCompetitionExperience').val(row.find('td').eq(5).text());
-            $('#editNeeds').val(row.find('td').eq(6).text());
-            $('#editRecommendedClass').val(row.find('td').eq(7).text());
-            $('#editTrialTime').val(row.find('td').eq(8).text());
+            $('#editChildName').val(row.find('td').eq(2).text());
+            $('#editWechatName').val(row.find('td').eq(3).text());
+            $('#editGrade').val(row.find('td').eq(4).text());
+            $('#editPreferredTime').val(row.find('td').eq(5).text());
+            $('#editCompetitionExperience').val(row.find('td').eq(6).text());
+            $('#editNeeds').val(row.find('td').eq(7).text());
+            $('#editRecommendedClass').val(row.find('td').eq(8).text());
+            $('#editTrialTime').val(row.find('td').eq(9).text());
             new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
         }
         function saveEditCustomer() {

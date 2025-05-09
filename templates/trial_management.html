@@ -39,7 +39,10 @@
                 <th style="min-width:120px;">家长微信名</th>
                 <th style="min-width:80px;">年级</th>
                 <th style="min-width:120px;">试课时间</th>
+                <th style="min-width:120px;">时间段</th>
                 <th style="min-width:140px;">操作</th>
+                <th style="min-width:120px;">备注</th>
+                <th style="min-width:140px;">未来预定</th>
             </tr>
         </thead>
         <tbody>
@@ -50,13 +53,19 @@
                 <td style="min-width:120px;">{{ r.wechat_name }}</td>
                 <td>{{ r.grade }}</td>
                 <td><span class="trial-time-cell">{{ r.trial_time or '未安排' }}</span></td>
+                <td>{{ r.trial_time_slot or '' }}</td>
                 <td>
                     <button class="btn btn-info btn-sm me-1 edit-trial-btn" 
                             data-id="{{ r.id }}" 
-                            data-time="{{ r.trial_time or '' }}">编辑</button>
+                            data-time="{{ r.trial_time or '' }}"
+                            data-remark="{{ r.remark or '' }}"
+                            data-future="{{ r.future_trial_time or '' }}"
+                    >编辑</button>
                     <button class="btn btn-danger btn-sm delete-trial-btn" 
                             data-id="{{ r.id }}">删除</button>
                 </td>
+                <td>{{ r.remark or '' }}</td>
+                <td>{{ r.future_trial_time or '' }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -76,7 +85,26 @@
                     <input type="hidden" id="editTrialId">
                     <div class="mb-3">
                         <label class="form-label">试课时间</label>
-                        <input type="text" class="form-control" id="editTrialTime" required>
+                        <input type="date" class="form-control" id="editTrialTime">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">时间段</label>
+                        <select class="form-select" id="editTrialTimeSlot">
+                            <option value="">请选择时间段</option>
+                            <option value="早上10-12">早上10-12</option>
+                            <option value="下午1-3">下午1-3</option>
+                            <option value="下午3-5">下午3-5</option>
+                            <option value="下午5-7">下午5-7</option>
+                            <option value="工作日一对一">工作日一对一</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">未来预定</label>
+                        <input type="text" class="form-control" id="editFutureTrialTime" placeholder="如2025年7月上旬">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">备注</label>
+                        <input type="text" class="form-control" id="editTrialRemark">
                     </div>
                 </form>
             </div>
@@ -110,7 +138,9 @@ $(document).ready(function() {
     $('.edit-trial-btn').on('click', function() {
         var id = $(this).data('id');
         var time = $(this).data('time');
-        editTrial(id, time);
+        var remark = $(this).data('remark');
+        var future = $(this).data('future');
+        editTrial(id, time, remark, future);
     });
 
     // 删除按钮点击事件
@@ -120,16 +150,35 @@ $(document).ready(function() {
     });
 });
 
-function editTrial(id, time) {
+function editTrial(id, time, remark, future) {
+    var btn = $('.edit-trial-btn[data-id="' + id + '"]');
+    var remark = btn.data('remark') || '';
+    var future = btn.data('future') || '';
     $('#editTrialId').val(id);
     $('#editTrialTime').val(time);
+    // 试课时间段回显（如有）
+    var row = btn.closest('tr');
+    var slot = row.find('td').eq(6).text();
+    $('#editTrialTimeSlot').val(slot);
+    $('#editFutureTrialTime').val(future);
+    $('#editTrialRemark').val(remark);
     new bootstrap.Modal(document.getElementById('editTrialModal')).show();
 }
 function saveEditTrial() {
     var id = $('#editTrialId').val();
     var time = $('#editTrialTime').val();
-    if (!time) { alert('请输入试课时间'); return; }
-    $.post('/api/edit_trial', {id: id, trial_time: time}, function(resp) {
+    var slot = $('#editTrialTimeSlot').val();
+    var future = $('#editFutureTrialTime').val();
+    var remark = $('#editTrialRemark').val();
+    if (!time && !future) { alert('请输入试课时间或未来预定'); return; }
+    var postData = {id: id, remark: remark};
+    if (future) {
+        postData.future_trial_time = future;
+    } else {
+        postData.trial_time = time;
+        postData.trial_time_slot = slot;
+    }
+    $.post('/api/edit_trial', postData, function(resp) {
         if (resp.success) {
             alert('保存成功！');
             location.reload();
