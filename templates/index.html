@@ -148,6 +148,9 @@
                             <button class="btn btn-success btn-lg me-3" onclick="scheduleTrial('now')">立即约课</button>
                             <button class="btn btn-info btn-lg" onclick="scheduleTrial('later')">未来预定</button>
                         </div>
+                        <div class="mb-3">
+                            <button class="btn btn-secondary btn-lg" id="btnNoPlan" onclick="noPlan()">暂不安排</button>
+                        </div>
                         <div id="trialTimeSelection" style="display: none;">
                             <input type="date" class="form-control mb-2" id="trialDate">
                             <select class="form-select mb-2" id="trialTimeSlot">
@@ -161,30 +164,7 @@
                             <button class="btn btn-primary btn-lg" onclick="confirmTrialTime()">确认试课时间</button>
                         </div>
                         <div id="futureBookingSelection" style="display: none;">
-                            <select class="form-select mb-2" id="futureYear">
-                                <option value="2024">2024年</option>
-                                <option value="2025">2025年</option>
-                                <option value="2026">2026年</option>
-                            </select>
-                            <select class="form-select mb-2" id="futureMonth">
-                                <option value="1">1月</option>
-                                <option value="2">2月</option>
-                                <option value="3">3月</option>
-                                <option value="4">4月</option>
-                                <option value="5">5月</option>
-                                <option value="6">6月</option>
-                                <option value="7">7月</option>
-                                <option value="8">8月</option>
-                                <option value="9">9月</option>
-                                <option value="10">10月</option>
-                                <option value="11">11月</option>
-                                <option value="12">12月</option>
-                            </select>
-                            <select class="form-select mb-2" id="futurePeriod">
-                                <option value="上旬">上旬</option>
-                                <option value="中旬">中旬</option>
-                                <option value="下旬">下旬</option>
-                            </select>
+                            <input type="date" class="form-control mb-2" id="futureDate">
                             <button class="btn btn-primary btn-lg" onclick="confirmFutureBooking()">确认预定时间</button>
                         </div>
                         <div id="trialArrangedInfo"></div>
@@ -198,6 +178,7 @@
     <script>
         let savedCustomerId = null;
         let currentTimeSlots = [];
+        let selectedMode = 'now'; // 默认立即约课
 
         document.getElementById('customerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -258,6 +239,7 @@
         });
 
         function scheduleTrial(type) {
+            selectedMode = type; // 'now' 或 'future'
             const trialTimeSelection = document.getElementById('trialTimeSelection');
             const futureBookingSelection = document.getElementById('futureBookingSelection');
             if (type === 'now') {
@@ -270,54 +252,61 @@
         }
 
         async function confirmTrialTime() {
+            if (selectedMode !== 'now') return;
             const trialDate = document.getElementById('trialDate').value;
             const trialTimeSlot = document.getElementById('trialTimeSlot').value;
-            console.log('trialDate:', trialDate, 'trialTimeSlot:', trialTimeSlot, 'savedCustomerId:', savedCustomerId);
-            if (trialDate && trialTimeSlot && trialTimeSlot !== '' && savedCustomerId) {
-                // 禁用按钮
-                document.querySelectorAll('.btn-success, .btn-info').forEach(btn => btn.disabled = true);
-                document.getElementById('trialTimeSelection').style.display = 'none';
-                document.getElementById('futureBookingSelection').style.display = 'none';
-                // 显示已安排
-                let detail = `${trialDate} ${trialTimeSlot}`;
-                document.getElementById('trialArrangedInfo').innerHTML = `<div class='alert alert-primary'>已安排：${detail}</div>`;
-                // 写入数据库
-                const formData = new FormData();
-                formData.append('customer_id', savedCustomerId);
-                formData.append('trial_time', trialDate);
-                formData.append('trial_time_slot', trialTimeSlot);
-                await fetch('/api/set_trial_time', {
-                    method: 'POST',
-                    body: formData
-                });
-            } else {
+            const btn = document.querySelector('#trialTimeSelection button');
+            if (!trialDate || !trialTimeSlot) {
                 alert('请选择试课日期和时间段');
+                return;
             }
+            // 禁用按钮并显示反馈
+            btn.disabled = true;
+            btn.innerText = '已提交';
+            document.querySelectorAll('.btn-success, .btn-info').forEach(btn => btn.disabled = true);
+            document.getElementById('btnNoPlan').disabled = true;
+            document.getElementById('trialTimeSelection').style.display = 'none';
+            document.getElementById('futureBookingSelection').style.display = 'none';
+            // 显示已安排
+            let detail = `${trialDate} ${trialTimeSlot}`;
+            document.getElementById('trialArrangedInfo').innerHTML = `<div class='alert alert-primary'>已安排：${detail}</div>`;
+            // 写入数据库
+            const formData = new FormData();
+            formData.append('customer_id', savedCustomerId);
+            formData.append('trial_time', trialDate);
+            formData.append('trial_time_slot', trialTimeSlot);
+            await fetch('/api/set_trial_time', {
+                method: 'POST',
+                body: formData
+            });
         }
 
         async function confirmFutureBooking() {
-            const year = document.getElementById('futureYear').value;
-            const month = document.getElementById('futureMonth').value;
-            const period = document.getElementById('futurePeriod').value;
-            if (year && month && period && savedCustomerId) {
-                // 禁用按钮
-                document.querySelectorAll('.btn-success, .btn-info').forEach(btn => btn.disabled = true);
-                document.getElementById('trialTimeSelection').style.display = 'none';
-                document.getElementById('futureBookingSelection').style.display = 'none';
-                // 显示已安排
-                let detail = `${year}年${month}月${period}`;
-                document.getElementById('trialArrangedInfo').innerHTML = `<div class='alert alert-primary'>已安排：${detail}</div>`;
-                // 写入数据库
-                const formData = new FormData();
-                formData.append('customer_id', savedCustomerId);
-                formData.append('future_trial_time', detail);
-                await fetch('/api/set_trial_time', {
-                    method: 'POST',
-                    body: formData
-                });
-            } else {
-                alert('请选择完整的预定时间');
+            if (selectedMode !== 'future') return;
+            const futureDate = document.getElementById('futureDate').value;
+            const btn = document.querySelector('#futureBookingSelection button');
+            if (!futureDate) {
+                alert('请选择完整的预定日期');
+                return;
             }
+            // 禁用按钮并显示反馈
+            btn.disabled = true;
+            btn.innerText = '已提交';
+            document.querySelectorAll('.btn-success, .btn-info').forEach(btn => btn.disabled = true);
+            document.getElementById('btnNoPlan').disabled = true;
+            document.getElementById('trialTimeSelection').style.display = 'none';
+            document.getElementById('futureBookingSelection').style.display = 'none';
+            // 显示已安排
+            let detail = `${futureDate}`;
+            document.getElementById('trialArrangedInfo').innerHTML = `<div class='alert alert-primary'>已安排：${detail}</div>`;
+            // 写入数据库
+            const formData = new FormData();
+            formData.append('customer_id', savedCustomerId);
+            formData.append('future_trial_time', futureDate);
+            await fetch('/api/set_trial_time', {
+                method: 'POST',
+                body: formData
+            });
         }
 
         function updateTrialTimeSlotOptions() {
@@ -342,6 +331,17 @@
                     select.innerHTML += `<option value="${slot}">${label}</option>`;
                 });
             }
+        }
+
+        function noPlan() {
+            // 如果已安排则不再覆盖
+            const arranged = document.getElementById('trialArrangedInfo').innerText;
+            if (arranged && arranged.indexOf('已安排') !== -1) return;
+            // 禁用所有试课相关按钮
+            document.querySelectorAll('.btn-success, .btn-info, #btnNoPlan').forEach(btn => btn.disabled = true);
+            document.getElementById('trialTimeSelection').style.display = 'none';
+            document.getElementById('futureBookingSelection').style.display = 'none';
+            document.getElementById('trialArrangedInfo').innerHTML = `<div class='alert alert-warning'>您已选择暂不安排试课，如有需要可随时联系我们！</div>`;
         }
     </script>
 </body>

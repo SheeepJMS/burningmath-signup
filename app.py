@@ -31,7 +31,7 @@ class Customer(db.Model):
     needs = db.Column(db.Text)
     recommended_class = db.Column(db.String(100))
     trial_class_time = db.Column(db.Date)  # 只存日期
-    future_trial_time = db.Column(db.String(100))  # 未来预定字符串
+    future_trial_time = db.Column(db.Date)  # 未来预定字符串
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # 班级信息模型
@@ -62,30 +62,47 @@ def index():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    data = request.form
-    # 推荐所有适用年级包含该年级的班级
-    recommended_classes = recommend_classes(data['grade'])
-    # 只取第一个推荐班型的名字（如有）
-    recommended_class_name = recommended_classes[0]['name'] if recommended_classes else None
+    print("submit被调用")
+    try:
+        data = request.form
+        print("收到表单数据:", data)
+        # 推荐所有适用年级包含该年级的班级
+        recommended_classes = recommend_classes(data['grade'])
+        # 只取第一个推荐班型的名字（如有）
+        recommended_class_name = recommended_classes[0]['name'] if recommended_classes else None
 
-    customer = Customer(
-        child_name=data['child_name'],
-        wechat_name=data['wechat_name'],
-        grade=data['grade'],
-        preferred_time=data['preferred_time'],
-        competition_experience=data['competition_experience'],
-        needs=data['needs'],
-        recommended_class=recommended_class_name  # 写入推荐班型
-    )
-    db.session.add(customer)
-    db.session.commit()
+        from datetime import datetime
+        trial_class_time_str = data.get('trial_class_time')
+        trial_class_time = None
+        if trial_class_time_str:
+            try:
+                trial_class_time = datetime.strptime(trial_class_time_str, '%Y-%m-%d').date()
+            except Exception:
+                trial_class_time = None
 
-    # 返回新客户ID，便于后续试课安排
-    return jsonify({
-        'success': True,
-        'recommended_classes': recommended_classes,
-        'customer_id': customer.id
-    })
+        customer = Customer(
+            child_name=data['child_name'],
+            wechat_name=data['wechat_name'],
+            grade=data['grade'],
+            preferred_time=data['preferred_time'],
+            competition_experience=data['competition_experience'],
+            needs=data['needs'],
+            recommended_class=recommended_class_name,  # 写入推荐班型
+            trial_class_time=trial_class_time
+        )
+        db.session.add(customer)
+        db.session.commit()
+
+        # 返回新客户ID，便于后续试课安排
+        return jsonify({
+            'success': True,
+            'recommended_classes': recommended_classes,
+            'customer_id': customer.id
+        })
+    except Exception as e:
+        import sys
+        print("/submit异常：", e, file=sys.stderr)
+        raise
 
 @app.route('/admin')
 def admin():
@@ -100,6 +117,8 @@ def admin_classes():
 @app.route('/admin/classes/save', methods=['POST'])
 def admin_classes_save():
     try:
+        print("🔍 收到表单内容:", dict(request.form))
+        print("🔍 收到文件内容:", request.files)
         name = request.form.get('name')
         grade_level = request.form.get('grade_level')  # 逗号分隔字符串
         description = request.form.get('description')
@@ -120,12 +139,14 @@ def admin_classes_save():
             try:
                 upload_result = cloudinary.uploader.upload(image)
                 image_url = upload_result['secure_url']
+                print("✅ Cloudinary上传结果:", upload_result)
             except Exception as e:
                 print(f"Error uploading image to Cloudinary: {str(e)}")
                 return jsonify(success=False, message='图片上传失败')
 
         # 保存到数据库
         try:
+            print("📝 即将保存到数据库:", name, grade_level, description, image_url, time_slots)
             new_class = ClassInfo(
                 name=name,
                 grade_level=grade_level,
@@ -154,18 +175,52 @@ def set_trial_time():
     if not customer:
         return jsonify(success=False, message='客户不存在')
     from datetime import datetime
+    need_add_trial = False
+    record_data = {}
     if future_trial_time:
-        customer.trial_class_time = None
-        customer.future_trial_time = future_trial_time
+        try:
+            customer.trial_class_time = None
+            customer.future_trial_time = datetime.strptime(future_trial_time, '%Y-%m-%d').date()
+            need_add_trial = True
+            record_data = {
+                'trial_time': None,
+                'trial_time_slot': None,
+                'future_trial_time': customer.future_trial_time
+            }
+        except Exception:
+            return jsonify(success=False, message='日期格式错误')
     else:
         if trial_time:
             try:
                 customer.trial_class_time = datetime.strptime(trial_time, '%Y-%m-%d').date()
+                need_add_trial = True
+                record_data = {
+                    'trial_time': customer.trial_class_time,
+                    'trial_time_slot': trial_time_slot,
+                    'future_trial_time': None
+                }
             except Exception:
                 return jsonify(success=False, message='日期格式错误')
         if trial_time_slot is not None:
             customer.future_trial_time = trial_time_slot
     db.session.commit()
+    # 自动同步到TrialRecord表
+    if need_add_trial:
+        exists = TrialRecord.query.filter_by(customer_id=customer_id).first()
+        if not exists:
+            record = TrialRecord(
+                customer_id=customer.id,
+                child_name=customer.child_name,
+                wechat_name=customer.wechat_name,
+                grade=customer.grade,
+                trial_time=record_data['trial_time'],
+                trial_time_slot=record_data['trial_time_slot'],
+                future_trial_time=record_data['future_trial_time']
+            )
+            print("准备添加试课记录:", record.__dict__)
+            db.session.add(record)
+            db.session.commit()
+            print("提交成功")
     return jsonify(success=True)
 
 def recommend_classes(grade):
@@ -249,6 +304,7 @@ def batch_confirm_trial():
     if not ids:
         return jsonify(success=False, message='未选择客户')
     try:
+        from datetime import datetime
         for cid in ids:
             customer = Customer.query.get(cid)
             if not customer:
@@ -257,12 +313,21 @@ def batch_confirm_trial():
             exists = TrialRecord.query.filter_by(customer_id=cid).first()
             if exists:
                 continue
+            # 只允许 trial_time 存入 date 类型
+            trial_time = None
+            if customer.trial_class_time:
+                trial_time = customer.trial_class_time
+            elif customer.future_trial_time:
+                try:
+                    trial_time = datetime.strptime(customer.future_trial_time, "%Y-%m-%d").date()
+                except Exception:
+                    trial_time = None
             record = TrialRecord(
                 customer_id=cid,
                 child_name=customer.child_name,
                 wechat_name=customer.wechat_name,
                 grade=customer.grade,
-                trial_time=customer.trial_class_time or customer.future_trial_time or ''
+                trial_time=trial_time
             )
             db.session.add(record)
         db.session.commit()
