@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 import cloudinary
 import cloudinary.uploader
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -12,6 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:/
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 cloudinary.config(
     cloud_name = 'dhjim7xbr',
@@ -386,4 +388,7 @@ with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
+    from flask_migrate import upgrade
+    with app.app_context():
+        upgrade()
     app.run(debug=True) 
