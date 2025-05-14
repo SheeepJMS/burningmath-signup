@@ -46,18 +46,6 @@ class ClassInfo(db.Model):
     time_slots = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# 试课记录模型
-class TrialRecord(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
-    child_name = db.Column(db.String(100))
-    wechat_name = db.Column(db.String(100))
-    grade = db.Column(db.String(50))
-    trial_time = db.Column(db.Date)  # 只存日期
-    trial_time_slot = db.Column(db.String(50))  # 新增时间段
-    remark = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
 @app.route('/')
 def index():
     return render_template('index.html')

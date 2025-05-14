@@ -154,7 +154,7 @@
                                 <td class="competition-cell">{{ customer.competition_experience }}</td>
                                 <td class="needs-cell">{{ customer.needs }}</td>
                                 <td class="recommend-class-cell">{{ customer.recommended_class }}</td>
-                                <td style="min-width:120px;"><span class="trial-time-cell">{{ customer.future_trial_time or customer.trial_class_time or '未安排' }}</span></td>
+                                <td style="min-width:120px;"><span class="trial-time-cell">未安排</span></td>
                                 <td style="min-width:120px;">{{ customer.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td style="min-width:140px;">
                                     <button class="btn btn-info btn-sm rounded-pill me-1 px-4" onclick="editCustomer({{ customer.id }})">
