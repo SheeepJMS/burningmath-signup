@@ -121,7 +121,6 @@
             </div>
             <div class="mb-2">
                 <button class="btn btn-danger" onclick="batchDeleteCustomers()">批量删除</button>
-                <button class="btn btn-success ms-2" onclick="batchConfirmTrial()">确认试课</button>
             </div>
             <div class="table-responsive">
                 <div style="overflow-x:auto;">
@@ -133,9 +132,9 @@
                                 <th style="min-width:120px;">孩子姓名</th>
                                 <th style="min-width:120px;">家长微信名</th>
                                 <th style="min-width:80px;">年级</th>
-                                <th style="min-width:120px;">时间偏好</th>
+                                <th style="min-width:40px;">时间偏好</th>
                                 <th style="min-width:120px;">竞赛成绩</th>
-                                <th style="min-width:120px;">需求</th>
+                                <th style="min-width:360px;">需求</th>
                                 <th style="min-width:40px;max-width:60px;">推荐班级</th>
                                 <th style="min-width:120px;">试课时间</th>
                                 <th style="min-width:120px;">提交时间</th>
@@ -150,7 +149,7 @@
                                 <td style="min-width:120px;">{{ customer.child_name }}</td>
                                 <td style="min-width:120px;">{{ customer.wechat_name }}</td>
                                 <td style="min-width:80px;">{{ customer.grade }}</td>
-                                <td style="min-width:120px;">{{ customer.preferred_time }}</td>
+                                <td style="min-width:40px;">{{ customer.preferred_time }}</td>
                                 <td class="competition-cell">{{ customer.competition_experience }}</td>
                                 <td class="needs-cell">{{ customer.needs }}</td>
                                 <td class="recommend-class-cell">{{ customer.recommended_class }}</td>
@@ -657,26 +656,6 @@
                     }
                 });
             }
-        }
-        function batchConfirmTrial() {
-            const ids = $('.customer-checkbox:checked').map(function(){return $(this).val();}).get();
-            if (ids.length === 0) { alert('请至少选择一项'); return; }
-            if (!confirm('确定要将选中客户批量加入试课管理吗？')) return;
-            $.ajax({
-                url: '/api/batch_confirm_trial',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ids: ids}),
-                success: function(response) {
-                    if (response.success) {
-                        alert('批量确认试课成功！');
-                        window.open('/trial_management', '_blank');
-                    } else {
-                        alert('操作失败：' + response.message);
-                    }
-                },
-                error: function() { alert('操作失败，请稍后重试'); }
-            });
         }
     </script>
 </div>
