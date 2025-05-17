@@ -58,6 +58,11 @@
         .needs-cell {
             max-width: 500px;
         }
+        .preference-cell {
+            max-width: 80px;
+            white-space: normal !important;
+            word-break: break-all;
+        }
         /* 推荐班级列缩小宽度 */
         .recommend-class-cell {
             min-width: 40px !important;
@@ -154,7 +159,7 @@
                                 <td style="min-width:120px;">{{ customer.child_name }}</td>
                                 <td style="min-width:120px;">{{ customer.wechat_name }}</td>
                                 <td style="min-width:80px;">{{ customer.grade }}</td>
-                                <td style="min-width:30px;">{{ customer.preferred_time }}</td>
+                                <td class="preference-cell">{{ customer.preferred_time }}</td>
                                 <td class="competition-cell">{{ customer.competition_experience }}</td>
                                 <td class="needs-cell">{{ customer.needs }}</td>
                                 <td class="recommend-class-cell">{{ customer.recommended_class }}</td>
