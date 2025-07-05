@@ -36,6 +36,19 @@ class Customer(db.Model):
     future_trial_time = db.Column(db.Date)  # 未来预定字符串
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+# 试课记录模型
+class TrialRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    child_name = db.Column(db.String(100), nullable=False)
+    wechat_name = db.Column(db.String(100), nullable=False)
+    grade = db.Column(db.String(50), nullable=False)
+    trial_time = db.Column(db.Date)
+    trial_time_slot = db.Column(db.String(50))
+    future_trial_time = db.Column(db.String(100))
+    remark = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 # 班级信息模型
 class ClassInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -155,82 +168,6 @@ def admin_classes_save():
         print(f"Unexpected error: {str(e)}")
         return jsonify(success=False, message='系统错误，请稍后重试')
 
-@app.route('/api/set_trial_time', methods=['POST'])
-def set_trial_time():
-    customer_id = request.form.get('customer_id')
-    trial_time = request.form.get('trial_time')
-    trial_time_slot = request.form.get('trial_time_slot')
-    future_trial_time = request.form.get('future_trial_time')
-    customer = Customer.query.get(customer_id)
-    if not customer:
-        return jsonify(success=False, message='客户不存在')
-    from datetime import datetime
-    need_add_trial = False
-    record_data = {}
-    if future_trial_time:
-        try:
-            customer.trial_class_time = None
-            customer.future_trial_time = datetime.strptime(future_trial_time, '%Y-%m-%d').date()
-            need_add_trial = True
-            record_data = {
-                'trial_time': None,
-                'trial_time_slot': None,
-                'future_trial_time': customer.future_trial_time
-            }
-        except Exception:
-            return jsonify(success=False, message='日期格式错误')
-    else:
-        if trial_time:
-            try:
-                customer.trial_class_time = datetime.strptime(trial_time, '%Y-%m-%d').date()
-                need_add_trial = True
-                record_data = {
-                    'trial_time': customer.trial_class_time,
-                    'trial_time_slot': trial_time_slot,
-                    'future_trial_time': None
-                }
-            except Exception:
-                return jsonify(success=False, message='日期格式错误')
-        if trial_time_slot is not None:
-            customer.future_trial_time = trial_time_slot
-    db.session.commit()
-    # 自动同步到TrialRecord表
-    if need_add_trial:
-        exists = TrialRecord.query.filter_by(customer_id=customer_id).first()
-        if not exists:
-            record = TrialRecord(
-                customer_id=customer.id,
-                child_name=customer.child_name,
-                wechat_name=customer.wechat_name,
-                grade=customer.grade,
-                trial_time=record_data['trial_time'],
-                trial_time_slot=record_data['trial_time_slot'],
-                future_trial_time=record_data['future_trial_time']
-            )
-            print("准备添加试课记录:", record.__dict__)
-            db.session.add(record)
-            db.session.commit()
-            print("提交成功")
-    return jsonify(success=True)
-
-def recommend_classes(grade):
-    # 查询所有包含该年级的班级，使用更精确的匹配
-    classes = ClassInfo.query.filter(
-        (ClassInfo.grade_level == grade) |  # 完全匹配
-        (ClassInfo.grade_level.like(f"{grade},%")) |  # 开头匹配
-        (ClassInfo.grade_level.like(f"%,{grade},%")) |  # 中间匹配
-        (ClassInfo.grade_level.like(f"%,{grade}"))  # 结尾匹配
-    ).all()
-    result = []
-    for c in classes:
-        result.append({
-            'name': c.name,
-            'description': c.description,
-            'image_url': c.image_url,
-            'time_slots': c.time_slots
-        })
-    return result
-
 @app.route('/admin/dashboard')
 def admin_dashboard():
     customers = Customer.query.order_by(Customer.created_at.desc()).all()
@@ -288,95 +225,27 @@ def delete_customers():
         db.session.rollback()
         return jsonify(success=False, message=str(e))
 
-@app.route('/api/batch_confirm_trial', methods=['POST'])
-def batch_confirm_trial():
-    ids = request.json.get('ids', [])
-    if not ids:
-        return jsonify(success=False, message='未选择客户')
-    try:
-        from datetime import datetime
-        for cid in ids:
-            customer = Customer.query.get(cid)
-            if not customer:
-                continue
-            # 避免重复添加
-            exists = TrialRecord.query.filter_by(customer_id=cid).first()
-            if exists:
-                continue
-            # 只允许 trial_time 存入 date 类型
-            trial_time = None
-            if customer.trial_class_time:
-                trial_time = customer.trial_class_time
-            elif customer.future_trial_time:
-                try:
-                    trial_time = datetime.strptime(customer.future_trial_time, "%Y-%m-%d").date()
-                except Exception:
-                    trial_time = None
-            record = TrialRecord(
-                customer_id=cid,
-                child_name=customer.child_name,
-                wechat_name=customer.wechat_name,
-                grade=customer.grade,
-                trial_time=trial_time
-            )
-            db.session.add(record)
-        db.session.commit()
-        return jsonify(success=True)
-    except Exception as e:
-        db.session.rollback()
-        return jsonify(success=False, message=str(e))
-
-@app.route('/trial_management')
-def trial_management():
-    records = TrialRecord.query.order_by(TrialRecord.created_at.desc()).all()
-    return render_template('trial_management.html', records=records)
-
-@app.route('/api/edit_trial', methods=['POST'])
-def edit_trial():
-    tid = request.form.get('id')
-    trial_time = request.form.get('trial_time')
-    trial_time_slot = request.form.get('trial_time_slot')
-    future_trial_time = request.form.get('future_trial_time')
-    remark = request.form.get('remark')
-    record = TrialRecord.query.get(tid)
-    if not record:
-        return jsonify(success=False, message='试课记录不存在')
-    from datetime import datetime
-    if future_trial_time:
-        record.trial_time = None
-        record.trial_time_slot = None
-        record.remark = remark
-        record.future_trial_time = future_trial_time
-    else:
-        if trial_time:
-            try:
-                record.trial_time = datetime.strptime(trial_time, '%Y-%m-%d').date()
-            except Exception:
-                return jsonify(success=False, message='日期格式错误')
-        if trial_time_slot is not None:
-            record.trial_time_slot = trial_time_slot
-        if remark is not None:
-            record.remark = remark
-        record.future_trial_time = None
-    db.session.commit()
-    return jsonify(success=True)
-
-@app.route('/api/delete_trial', methods=['POST'])
-def delete_trial():
-    tid = request.form.get('id')
-    record = TrialRecord.query.get(tid)
-    if not record:
-        return jsonify(success=False, message='试课记录不存在')
-    db.session.delete(record)
-    db.session.commit()
-    return jsonify(success=True)
+def recommend_classes(grade):
+    # 查询所有包含该年级的班级，使用更精确的匹配
+    classes = ClassInfo.query.filter(
+        (ClassInfo.grade_level == grade) |  # 完全匹配
+        (ClassInfo.grade_level.like(f"{grade},%")) |  # 开头匹配
+        (ClassInfo.grade_level.like(f"%,{grade},%")) |  # 中间匹配
+        (ClassInfo.grade_level.like(f"%,{grade}"))  # 结尾匹配
+    ).all()
+    result = []
+    for c in classes:
+        result.append({
+            'name': c.name,
+            'description': c.description,
+            'image_url': c.image_url,
+            'time_slots': c.time_slots
+        })
+    return result
 
 # 保证无论本地还是线上都能自动建表
 with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    from flask_migrate import upgrade
-    with app.app_context():
-        upgrade()
     app.run(debug=True) 
