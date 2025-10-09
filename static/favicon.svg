@@ -1,0 +1,30 @@
+<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <!-- 绿色背景圆形 -->
+  <circle cx="8" cy="8" r="7" fill="#28a745" stroke="#1e7e34" stroke-width="1"/>
+  
+  <!-- Falcon主体 -->
+  <g transform="translate(8, 8)">
+    <!-- 头部 -->
+    <ellipse cx="-1" cy="-2" rx="2" ry="3" fill="#ffffff" opacity="0.9"/>
+    
+    <!-- 喙 -->
+    <path d="M -3 -2 L -4 -1 L -3 0 Z" fill="#ff8c00"/>
+    
+    <!-- 眼睛 -->
+    <circle cx="-1.5" cy="-2.5" r="0.5" fill="#000000"/>
+    
+    <!-- 身体 -->
+    <ellipse cx="0" cy="0" rx="3" ry="4" fill="#ffffff" opacity="0.9"/>
+    
+    <!-- 翅膀 -->
+    <ellipse cx="-2" cy="-1" rx="2" ry="3" fill="#ffffff" opacity="0.8" transform="rotate(-20)"/>
+    <ellipse cx="2" cy="-1" rx="2" ry="3" fill="#ffffff" opacity="0.8" transform="rotate(20)"/>
+    
+    <!-- 尾巴 -->
+    <path d="M 0 3 L -1.5 5 L 1.5 5 Z" fill="#ffffff" opacity="0.8"/>
+    
+    <!-- 爪子 -->
+    <path d="M -1 4 L -1.5 5 L -0.5 5 Z" fill="#ff8c00"/>
+    <path d="M 1 4 L 1.5 5 L 0.5 5 Z" fill="#ff8c00"/>
+  </g>
+</svg>
