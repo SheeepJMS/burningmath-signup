@@ -167,10 +167,44 @@
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
+            // 注册自定义排序类型：试课时间
+            $.fn.dataTable.ext.type.order['trial-time-pre'] = function(data) {
+                const text = String(data).trim();
+                if (!text || text === '未安排') {
+                    return 0; // 未安排的排在最后
+                }
+                // 尝试解析日期字符串
+                let dt = null;
+                // 处理 YYYY-MM-DD 格式
+                if (text.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    dt = new Date(text + 'T00:00:00');
+                } else {
+                    // 处理包含时间的格式
+                    let dateStr = text.split(' ')[0];
+                    let timeStr = text.split(' ')[1] || '00:00';
+                    if (timeStr && timeStr.match(/\d{1,2}-\d{1,2}/)) {
+                        timeStr = timeStr.split('-')[0] + ':00';
+                    }
+                    dt = new Date(dateStr + 'T' + timeStr);
+                }
+                if (!dt || isNaN(dt.getTime())) {
+                    return 0; // 解析失败也排在最后
+                }
+                // 返回时间戳（降序时最新的在前）
+                return dt.getTime();
+            };
+            
             $('#customersTable').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese.json'
-                }
+                },
+                columnDefs: [
+                    { 
+                        targets: 8, // 试课时间列（索引8）
+                        type: 'trial-time',
+                        orderSequence: ['desc', 'asc'] // 默认降序（最新的在前）
+                    }
+                ]
             });
         });
 
