@@ -8,139 +8,242 @@
     <link rel="icon" type="image/x-icon" href="/static/falcon-icon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Subtle background: medals image (softer so header stays readable) */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("/hero-medals.jpg");
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px);
+            opacity: 0.18;
+            z-index: -2;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.2);
+            z-index: -1;
+        }
         body {
-            background-color: #f8f9fa;
+            background-color: #e8eaed;
+            padding-bottom: 2rem;
+            position: relative;
+        }
+        /* Content above background layers; form card unchanged */
+        .page-wrap {
+            position: relative;
+            z-index: 0;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem 1rem 1.5rem;
+        }
+        @media (min-width: 576px) {
+            .page-wrap { padding: 1.5rem 1.5rem 2rem; }
         }
         .form-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
+            width: 100%;
+            padding: 1.25rem 1rem;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.06);
         }
+        @media (min-width: 576px) {
+            .form-container { padding: 1.5rem 1.75rem; }
+        }
+        /* Official website entry: compact, premium */
+        .website-entry {
+            text-align: center;
+            padding: 0.6rem 1rem;
+            margin-bottom: 0.9rem;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 10px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+        }
+        .website-entry .lead { font-size: 0.95rem; color: #333; margin-bottom: 0.25rem; }
+        .website-entry .btn-outline-primary {
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+        }
+        /* Form sections grouping */
+        .form-section {
+            margin-bottom: 0.9rem;
+        }
+        .form-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.45rem;
+            letter-spacing: 0.02em;
+        }
+        .form-label { font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .form-container .mb-3 { margin-bottom: 0.65rem !important; }
+        .form-control, .form-select { font-size: 0.95rem; }
+        .form-check { margin-bottom: 0.3rem; }
+        .form-check-label { font-size: 0.9rem; }
         .class-recommendation {
             display: none;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             padding: 1rem;
             border: 1px solid #dee2e6;
-            border-radius: 5px;
+            border-radius: 8px;
+        }
+        /* Header panel: light glass panel for step + title + subtitle readability */
+        .header-panel {
+            background: rgba(255,255,255,0.72);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            max-width: 100%;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        }
+        @media (min-width: 576px) {
+            .header-panel { padding: 1.25rem 1.5rem; }
+        }
+        .header-panel .step-indicator {
+            margin-bottom: 0.85rem;
+        }
+        .header-panel .page-title {
+            color: #1a1d21;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+        .header-panel .helper-text {
+            color: #4a4f56;
+            margin-bottom: 0;
         }
         .step-indicator {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 0.25rem;
         }
         .step {
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #888;
-            padding: 0 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #5c6268;
+            padding: 0 6px;
         }
-        .step.active {
-            color: #007bff;
+        .step.active { color: #0d6efd; font-weight: 700; }
+        .step-arrow { margin: 0 4px; font-size: 1rem; color: #5c6268; }
+        .btn-submit {
+            width: 100%;
+            font-size: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
         }
-        .step-arrow {
-            margin: 0 10px;
-            font-size: 1.2rem;
+        .helper-text {
+            font-size: 0.875rem;
+            line-height: 1.4;
         }
-        .btn-lg {
-            font-size: 1.25rem;
-            padding: 0.75rem 2rem;
+        .page-title { font-size: 1.35rem; }
+        @media (min-width: 576px) {
+            .page-title { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="form-container">
+    <div class="page-wrap">
+        <div class="header-panel text-center">
             <div id="stepIndicator" class="step-indicator">
                 <span id="step1" class="step active">1. 填写信息</span>
                 <span class="step-arrow">→</span>
                 <span id="step2" class="step">2. 查看推荐班级</span>
             </div>
-            <div id="step1Content">
-                <h2 class="text-center mb-4">曾老师奥数课咨询表</h2>
+            <h1 class="page-title">Book a Trial / Diagnostic</h1>
+            <p class="helper-text">填写以下信息，我们会根据孩子情况推荐课程或诊断方向。<br><small>Fill out the form and we'll recommend a suitable class.</small></p>
+        </div>
+        <div id="step1Content">
+            <!-- Official website entry: display-only, not a form field -->
+            <div class="website-entry">
+                <p class="lead mb-0">先了解课程与学生成绩</p>
+                <p class="mb-0 small text-muted">Burning Math Academy 官网</p>
+                <a href="https://www.burningmath.com" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary mt-2">查看官网 →</a>
+            </div>
+
+            <div class="form-container">
                 <form id="customerForm">
-                    <div class="mb-3">
-                        <label for="child_name" class="form-label">孩子姓名</label>
-                        <input type="text" class="form-control" id="child_name" name="child_name" required>
+                    <div class="form-section">
+                        <div class="form-section-title">基本信息</div>
+                        <div class="mb-3">
+                            <label for="child_name" class="form-label">孩子姓名</label>
+                            <input type="text" class="form-control" id="child_name" name="child_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="wechat_name" class="form-label">家长微信名（用于联系）</label>
+                            <input type="text" class="form-control" id="wechat_name" name="wechat_name" required>
+                            <p class="form-text text-muted mt-1 mb-0 small">请填写家长本人微信，否则可能无法联系。</p>
+                        </div>
+                        <div class="mb-3">
+                            <label for="grade" class="form-label">年级</label>
+                            <select class="form-select" id="grade" name="grade" required>
+                                <option value="">请选择年级</option>
+                                <option value="G1">G1 (小学一年级)</option>
+                                <option value="G2">G2 (小学二年级)</option>
+                                <option value="G3">G3 (小学三年级)</option>
+                                <option value="G4">G4 (小学四年级)</option>
+                                <option value="G5">G5 (小学五年级)</option>
+                                <option value="G6">G6 (小学六年级)</option>
+                                <option value="G7">G7 (初中一年级)</option>
+                                <option value="G8">G8 (初中二年级)</option>
+                                <option value="G9">G9 (初中三年级)</option>
+                                <option value="G10">G10 (高中一年级)</option>
+                                <option value="G11">G11 (高中二年级)</option>
+                                <option value="G12">G12 (高中三年级)</option>
+                            </select>
+                        </div>
+                        <!-- Backend: field name competition_experience kept for DB compatibility; UI now collects 孩子学校 (school) -->
+                        <div class="mb-3">
+                            <label for="competition_experience" class="form-label">孩子学校</label>
+                            <input type="text" class="form-control" id="competition_experience" name="competition_experience" placeholder="例如：St George / Crofton House / UHill / Lord Byng">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="wechat_name" class="form-label">家长微信名</label>
-                        <input type="text" class="form-control" id="wechat_name" name="wechat_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="grade" class="form-label">年级</label>
-                        <select class="form-select" id="grade" name="grade" required>
-                            <option value="">请选择年级</option>
-                            <option value="G1">G1 (小学一年级)</option>
-                            <option value="G2">G2 (小学二年级)</option>
-                            <option value="G3">G3 (小学三年级)</option>
-                            <option value="G4">G4 (小学四年级)</option>
-                            <option value="G5">G5 (小学五年级)</option>
-                            <option value="G6">G6 (小学六年级)</option>
-                            <option value="G7">G7 (初中一年级)</option>
-                            <option value="G8">G8 (初中二年级)</option>
-                            <option value="G9">G9 (初中三年级)</option>
-                            <option value="G10">G10 (高中一年级)</option>
-                            <option value="G11">G11 (高中二年级)</option>
-                            <option value="G12">G12 (高中三年级)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">上课时间偏好</label>
+
+                    <div class="form-section">
+                        <div class="form-section-title">课程形式</div>
                         <div id="preferred_time_group">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周六上午10-12" id="pt1">
-                                <label class="form-check-label" for="pt1">周六上午 10:00-12:00</label>
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周末班课" id="pt1">
+                                <label class="form-check-label" for="pt1">周末班课</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周六中午1-3" id="pt2">
-                                <label class="form-check-label" for="pt2">周六中午 13:00-15:00</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周六下午3-5" id="pt3">
-                                <label class="form-check-label" for="pt3">周六下午 15:00-17:00</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周六下午5-7" id="pt4">
-                                <label class="form-check-label" for="pt4">周六下午 17:00-19:00</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周日上午10-12" id="pt5">
-                                <label class="form-check-label" for="pt5">周日上午 10:00-12:00</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周日中午1-3" id="pt6">
-                                <label class="form-check-label" for="pt6">周日中午 13:00-15:00</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周日下午3-5" id="pt7">
-                                <label class="form-check-label" for="pt7">周日下午 15:00-17:00</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周日下午5-7" id="pt8">
-                                <label class="form-check-label" for="pt8">周日下午 17:00-19:00</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="preferred_time" value="工作日网课一对一" id="pt9">
-                                <label class="form-check-label" for="pt9">工作日网课一对一</label>
+                                <input class="form-check-input" type="checkbox" name="preferred_time" value="周中 1v1 网课" id="pt2">
+                                <label class="form-check-label" for="pt2">周中 1v1 网课</label>
                             </div>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="competition_experience" class="form-label">竞赛成绩</label>
-                        <textarea class="form-control" id="competition_experience" name="competition_experience" rows="6" style="min-height: 150px;" placeholder="如有竞赛成绩请填写，没有可不填"></textarea>
+
+                    <div class="form-section">
+                        <div class="form-section-title">补充信息</div>
+                        <div class="mb-3">
+                            <label for="needs" class="form-label">补充信息（学习需求 / 目标竞赛 / 过往竞赛经历 / 排课需求）</label>
+                            <textarea class="form-control" id="needs" name="needs" rows="4" style="min-height: 100px;" placeholder="例如：准备 AMC8 / 上过竞赛课 / 希望周末班课" required></textarea>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="needs" class="form-label">教学需求和排课日期需求</label>
-                        <textarea class="form-control" id="needs" name="needs" rows="6" style="min-height: 150px;" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">提交信息</button>
+                    <button type="submit" class="btn btn-primary btn-submit">提交信息</button>
                 </form>
             </div>
-            <div id="step2Content" style="display:none;">
+        </div>
+        <div id="step2Content" style="display:none;">
+            <div class="form-container">
                 <div id="classRecommendation" class="class-recommendation" style="display:block;">
                     <h3>初步推荐班级</h3>
                     <div id="recommendedClassInfo"></div>
@@ -149,7 +252,7 @@
                             <h5>提交成功！</h5>
                             <p>感谢您的咨询，我们会尽快与您联系安排试课。</p>
                         </div>
-                        <button class="btn btn-primary" onclick="window.location.reload()">重新填写</button>
+                        <button class="btn btn-primary btn-submit" onclick="window.location.reload()">重新填写</button>
                     </div>
                 </div>
             </div>

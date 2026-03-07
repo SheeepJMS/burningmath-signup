@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -63,6 +63,14 @@ class ClassInfo(db.Model):
 def index():
     return render_template('index.html')
 
+@app.route('/hero-medals.jpg')
+def hero_medals():
+    """Serve hero background image from project root for consultation page."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'hero-medals.jpg')
+    if not os.path.isfile(path):
+        return '', 404
+    return send_file(path, mimetype='image/jpeg')
+
 @app.route('/submit', methods=['POST'])
 def submit():
     print("submit被调用")
@@ -83,12 +91,13 @@ def submit():
             except Exception:
                 trial_class_time = None
 
+        # competition_experience: DB column unchanged; UI now collects 孩子学校 (school) to avoid schema migration
         customer = Customer(
             child_name=data['child_name'],
             wechat_name=data['wechat_name'],
             grade=data['grade'],
             preferred_time=data['preferred_time'],
-            competition_experience=data['competition_experience'],
+            competition_experience=data.get('competition_experience', ''),  # now used for school name
             needs=data['needs'],
             recommended_class=recommended_class_name,  # 写入推荐班型
             trial_class_time=trial_class_time
